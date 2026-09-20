@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "357499125175",
+    "project_id": "pawfect-match-a4d14",
+    "storage_bucket": "pawfect-match-a4d14.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:357499125175:android:084b2137c57cea2916bc32",
+        "android_client_info": {
+          "package_name": "com.example.pawfect"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBqwDBsp9MdQ3U2yLhh0S-5EdFWfJVBsyg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
