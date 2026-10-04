@@ -1,0 +1,68 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Dog profiles
+    match /dogs/{dogId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null &&
+        request.auth.uid == resource.data.ownerId;
+    }
+
+    // Match requests
+    match /matchRequests/{requestId} {
+      allow read: if request.auth != null &&
+        (request.auth.uid == resource.data.requesterId ||
+         request.auth.uid == resource.data.targetOwnerId);
+      allow create: if request.auth != null &&
+        request.auth.uid == request.resource.data.requesterId;
+      allow update: if request.auth != null &&
+        (request.auth.uid == resource.data.requesterId ||
+         request.auth.uid == resource.data.targetOwnerId);
+      allow delete: if request.auth != null &&
+        request.auth.uid == resource.data.requesterId;
+    }
+
+    // Reviews
+    match /reviews/{reviewId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null &&
+        request.auth.uid == request.resource.data.reviewerId;
+      allow update, delete: if request.auth != null &&
+        request.auth.uid == resource.data.reviewerId;
+    }
+
+    // Community posts
+    match /communityPosts/{postId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      // Allow post author to update/delete their post
+      allow delete: if request.auth != null &&
+        request.auth.uid == resource.data.authorId;
+      // Allow post author to update their post content
+      // OR allow any authenticated user to update commentCount and likes
+      allow update: if request.auth != null && (
+        // Post author can update anything
+        request.auth.uid == resource.data.authorId ||
+        // Any user can update commentCount (for comment creation/deletion)
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['commentCount'])) ||
+        // Any user can update likes and likedBy (for like/unlike)
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes', 'likedBy']))
+      );
+    }
+
+    // Post comments
+    match /postComments/{commentId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null &&
+        request.auth.uid == resource.data.authorId;
+    }
+  }
+}

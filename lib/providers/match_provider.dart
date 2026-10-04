@@ -19,7 +19,10 @@ class MatchProvider extends ChangeNotifier {
       _receivedRequests.where((r) => r.status == MatchStatus.pending).toList();
 
   void listenToSentRequests(String userId) {
-    _firestoreService.getSentMatchRequests(userId).listen(
+    final normalizedUserId = userId.trim();
+    if (normalizedUserId.isEmpty) return;
+
+    _firestoreService.getSentMatchRequests(normalizedUserId).listen(
       (requests) {
         _sentRequests = requests;
         notifyListeners();
@@ -32,7 +35,10 @@ class MatchProvider extends ChangeNotifier {
   }
 
   void listenToReceivedRequests(String userId) {
-    _firestoreService.getReceivedMatchRequests(userId).listen(
+    final normalizedUserId = userId.trim();
+    if (normalizedUserId.isEmpty) return;
+
+    _firestoreService.getReceivedMatchRequests(normalizedUserId).listen(
       (requests) {
         _receivedRequests = requests;
         notifyListeners();

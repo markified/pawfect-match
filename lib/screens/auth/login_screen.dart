@@ -54,7 +54,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppSizes.paddingLarge),
@@ -64,14 +64,14 @@ class _LoginScreenState extends State<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 40),
-                // Logo/Icon
+                
                 Icon(
                   Icons.pets,
                   size: 80,
                   color: AppColors.primary,
                 ),
                 const SizedBox(height: 20),
-                // Title
+                
                 Text(
                   'Pawfect Match',
                   style: AppTextStyles.heading1,
@@ -81,12 +81,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 Text(
                   'Find the perfect breeding partner',
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.textSecondary,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 40),
-                // Email field
+                
                 CustomTextField(
                   controller: _emailController,
                   label: 'Email',
@@ -96,7 +96,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   validator: Validators.validateEmail,
                 ),
                 const SizedBox(height: 16),
-                // Password field
+                
                 CustomTextField(
                   controller: _passwordController,
                   label: 'Password',
@@ -106,7 +106,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   validator: Validators.validatePassword,
                 ),
                 const SizedBox(height: 24),
-                // Login button
+                
                 Consumer<AuthProvider>(
                   builder: (context, authProvider, child) {
                     return CustomButton(
@@ -117,7 +117,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   },
                 ),
                 const SizedBox(height: 16),
-                // Register link
+                
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

@@ -71,7 +71,8 @@ Pawfect Match is a mobile application designed to connect dog breeders with comp
 
 ### Tech Stack
 - **Frontend:** Flutter 3.0+
-- **Backend:** Firebase (Auth, Firestore, Storage)
+- **Backend:** Firebase (Auth, Firestore)
+- **Image Storage:** Cloudinary (CDN delivery, auto-optimization)
 - **State Management:** Provider pattern
 - **Architecture:** Clean Architecture with separation of concerns
 
@@ -122,7 +123,19 @@ cd pawfect
 flutter pub get
 ```
 
-3. **Configure Firebase**
+3. **Configure Cloudinary**
+
+Set up your Cloudinary account for image storage:
+
+```bash
+# 1. Create account at https://cloudinary.com
+# 2. Get your cloud name and create upload preset
+# 3. Update lib/config/cloudinary_config.dart
+```
+
+See **[CLOUDINARY_SETUP.md](CLOUDINARY_SETUP.md)** for detailed instructions.
+
+4. **Configure Firebase**
 
 The Firebase configuration is already set up for project `pawfect-match-a4d14`. If you need to reconfigure:
 
@@ -136,11 +149,11 @@ flutterfire configure --project=pawfect-match-a4d14
 
 4. **Enable Firebase Services**
 
-Follow the **QUICK_START.md** guide to:
+Follow the **[QUICK_START_CLOUDINARY.md](QUICK_START_CLOUDINARY.md)** guide to:
 - Enable Authentication (Email/Password)
 - Enable Firestore Database
-- Enable Storage
-- Set security rules
+- Set Firestore security rules
+- **Note:** No need for Firebase Storage - using Cloudinary!
 
 5. **Run the app**
 ```bash
@@ -151,11 +164,13 @@ flutter run
 
 ## 📚 Documentation
 
-- **[QUICK_START.md](QUICK_START.md)** - Get the app running in 5 minutes
+- **[QUICK_START_CLOUDINARY.md](QUICK_START_CLOUDINARY.md)** - Get the app running in 15 minutes
+- **[CLOUDINARY_SETUP.md](CLOUDINARY_SETUP.md)** - Detailed Cloudinary configuration
 - **[FEATURES.md](FEATURES.md)** - Detailed feature descriptions
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** - Code structure and design patterns
 - **[USER_GUIDE.md](USER_GUIDE.md)** - End-user documentation
-- **[FIREBASE_SETUP.md](FIREBASE_SETUP.md)** - Detailed Firebase configuration
+- **[FIREBASE_SETUP.md](FIREBASE_SETUP.md)** - Firebase configuration (Auth & Firestore only)
+- **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - Build and runtime issues
 
 ---
 

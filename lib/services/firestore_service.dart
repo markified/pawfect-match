@@ -1,3 +1,4 @@
+﻿import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/dog_profile.dart';
 import '../models/match_request.dart';
@@ -8,23 +9,39 @@ import '../models/community_post.dart';
 class FirestoreService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // ============ Dog Profile Operations ============
+  
 
-  // Create dog profile
+  
   Future<void> createDogProfile(DogProfile dog) async {
     try {
-      await _firestore.collection('dogs').doc(dog.id).set(dog.toMap());
-      
-      // Update user's dogIds
-      await _firestore.collection('users').doc(dog.ownerId).update({
-        'dogIds': FieldValue.arrayUnion([dog.id])
-      });
+      final dogId = dog.id.trim();
+      final ownerId = dog.ownerId.trim();
+
+      if (dogId.isEmpty) {
+        throw Exception('Dog id is required.');
+      }
+      if (ownerId.isEmpty) {
+        throw Exception('Owner id is required.');
+      }
+
+      final dogRef = _firestore.collection('dogs').doc(dogId);
+      await dogRef.set(dog.toMap());
+
+      final userRef = _firestore.collection('users').doc(ownerId);
+      await userRef.set({
+        'uid': ownerId,
+        'email': '',
+        'name': 'User',
+        'createdAt': FieldValue.serverTimestamp(),
+        'isVerified': false,
+        'dogIds': FieldValue.arrayUnion([dogId]),
+      }, SetOptions(merge: true));
     } catch (e) {
       throw Exception('Failed to create dog profile: $e');
     }
   }
 
-  // Get dog profile
+  
   Future<DogProfile?> getDogProfile(String dogId) async {
     try {
       final doc = await _firestore.collection('dogs').doc(dogId).get();
@@ -37,7 +54,7 @@ class FirestoreService {
     }
   }
 
-  // Update dog profile
+  
   Future<void> updateDogProfile(DogProfile dog) async {
     try {
       await _firestore.collection('dogs').doc(dog.id).update(dog.toMap());
@@ -46,12 +63,12 @@ class FirestoreService {
     }
   }
 
-  // Delete dog profile
+  
   Future<void> deleteDogProfile(String dogId, String ownerId) async {
     try {
       await _firestore.collection('dogs').doc(dogId).delete();
       
-      // Remove from user's dogIds
+      
       await _firestore.collection('users').doc(ownerId).update({
         'dogIds': FieldValue.arrayRemove([dogId])
       });
@@ -60,7 +77,7 @@ class FirestoreService {
     }
   }
 
-  // Get user's dogs
+  
   Stream<List<DogProfile>> getUserDogs(String userId) {
     return _firestore
         .collection('dogs')
@@ -71,7 +88,7 @@ class FirestoreService {
             .toList());
   }
 
-  // Get available dogs for matching (excluding user's own dogs)
+  
   Stream<List<DogProfile>> getAvailableDogsForMatching(String currentUserId) {
     return _firestore
         .collection('dogs')
@@ -83,7 +100,7 @@ class FirestoreService {
             .toList());
   }
 
-  // Search dogs by breed
+  
   Stream<List<DogProfile>> searchDogsByBreed(String breed, String currentUserId) {
     return _firestore
         .collection('dogs')
@@ -96,9 +113,9 @@ class FirestoreService {
             .toList());
   }
 
-  // ============ Match Request Operations ============
+  
 
-  // Create match request
+  
   Future<void> createMatchRequest(MatchRequest matchRequest) async {
     try {
       await _firestore
@@ -110,7 +127,7 @@ class FirestoreService {
     }
   }
 
-  // Update match request status
+  
   Future<void> updateMatchRequest(MatchRequest matchRequest) async {
     try {
       await _firestore
@@ -122,7 +139,7 @@ class FirestoreService {
     }
   }
 
-  // Get match requests sent by user
+  
   Stream<List<MatchRequest>> getSentMatchRequests(String userId) {
     return _firestore
         .collection('matchRequests')
@@ -134,7 +151,7 @@ class FirestoreService {
             .toList());
   }
 
-  // Get match requests received by user
+  
   Stream<List<MatchRequest>> getReceivedMatchRequests(String userId) {
     return _firestore
         .collection('matchRequests')
@@ -146,21 +163,26 @@ class FirestoreService {
             .toList());
   }
 
-  // ============ Review Operations ============
+  
 
-  // Create review
+  
   Future<void> createReview(Review review) async {
     try {
       await _firestore.collection('reviews').doc(review.id).set(review.toMap());
+
       
-      // Update dog's rating
-      await _updateDogRating(review.targetDogId);
+      
+      try {
+        await _updateDogRating(review.targetDogId);
+      } catch (e) {
+        debugPrint('Review saved, but dog rating cache was not updated: $e');
+      }
     } catch (e) {
       throw Exception('Failed to create review: $e');
     }
   }
 
-  // Get reviews for a dog
+  
   Stream<List<Review>> getDogReviews(String dogId) {
     return _firestore
         .collection('reviews')
@@ -172,19 +194,23 @@ class FirestoreService {
             .toList());
   }
 
-  // Get reviews for an owner's dogs
+  
   Stream<List<Review>> getOwnerReviews(String ownerId) {
     return _firestore
         .collection('reviews')
         .where('targetOwnerId', isEqualTo: ownerId)
-        .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => Review.fromMap(doc.data()))
-            .toList());
+        .map((snapshot) {
+      final reviews = snapshot.docs
+          .map((doc) => Review.fromMap(doc.data()))
+          .toList();
+      
+      reviews.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      return reviews;
+    });
   }
 
-  // Update dog rating after new review
+  
   Future<void> _updateDogRating(String dogId) async {
     try {
       final reviews = await _firestore
@@ -210,12 +236,17 @@ class FirestoreService {
     }
   }
 
-  // ============ User Operations ============
+  
 
-  // Get user by ID
+  
   Future<UserModel?> getUserById(String userId) async {
+    final normalizedUserId = userId.trim();
+    if (normalizedUserId.isEmpty) {
+      return null;
+    }
+
     try {
-      final doc = await _firestore.collection('users').doc(userId).get();
+      final doc = await _firestore.collection('users').doc(normalizedUserId).get();
       if (doc.exists) {
         return UserModel.fromMap(doc.data()!);
       }
@@ -225,7 +256,7 @@ class FirestoreService {
     }
   }
 
-  // Get completed matches count for user
+  
   Future<int> getCompletedMatchesCount(String userId) async {
     try {
       final sentMatches = await _firestore
@@ -233,22 +264,27 @@ class FirestoreService {
           .where('requesterId', isEqualTo: userId)
           .where('status', isEqualTo: MatchStatus.completed.name)
           .get();
-      
+
       final receivedMatches = await _firestore
           .collection('matchRequests')
           .where('targetOwnerId', isEqualTo: userId)
           .where('status', isEqualTo: MatchStatus.completed.name)
           .get();
-      
+
       return sentMatches.docs.length + receivedMatches.docs.length;
+    } on FirebaseException catch (e) {
+      if (e.code == 'permission-denied') {
+        return 0;
+      }
+      throw Exception('Failed to get completed matches count: $e');
     } catch (e) {
       throw Exception('Failed to get completed matches count: $e');
     }
   }
 
-  // ============ Community Post Operations ============
+  
 
-  // Create community post
+  
   Future<void> createCommunityPost(CommunityPost post) async {
     try {
       await _firestore.collection('communityPosts').doc(post.id).set(post.toMap());
@@ -257,7 +293,7 @@ class FirestoreService {
     }
   }
 
-  // Update community post
+  
   Future<void> updateCommunityPost(CommunityPost post) async {
     try {
       await _firestore.collection('communityPosts').doc(post.id).update(post.toMap());
@@ -266,13 +302,13 @@ class FirestoreService {
     }
   }
 
-  // Delete community post
+  
   Future<void> deleteCommunityPost(String postId) async {
     try {
-      // Delete post
+      
       await _firestore.collection('communityPosts').doc(postId).delete();
       
-      // Delete associated comments
+      
       final comments = await _firestore
           .collection('postComments')
           .where('postId', isEqualTo: postId)
@@ -286,7 +322,7 @@ class FirestoreService {
     }
   }
 
-  // Get all community posts
+  
   Stream<List<CommunityPost>> getCommunityPosts() {
     return _firestore
         .collection('communityPosts')
@@ -297,7 +333,7 @@ class FirestoreService {
             .toList());
   }
 
-  // Get community posts by category
+  
   Stream<List<CommunityPost>> getCommunityPostsByCategory(PostCategory category) {
     return _firestore
         .collection('communityPosts')
@@ -309,7 +345,7 @@ class FirestoreService {
             .toList());
   }
 
-  // Get user's community posts
+  
   Stream<List<CommunityPost>> getUserCommunityPosts(String userId) {
     return _firestore
         .collection('communityPosts')
@@ -321,7 +357,7 @@ class FirestoreService {
             .toList());
   }
 
-  // Like/Unlike post
+  
   Future<void> togglePostLike(String postId, String userId) async {
     try {
       final postRef = _firestore.collection('communityPosts').doc(postId);
@@ -331,13 +367,13 @@ class FirestoreService {
         final post = CommunityPost.fromMap(postDoc.data()!);
         
         if (post.likedBy.contains(userId)) {
-          // Unlike
+          
           await postRef.update({
             'likes': FieldValue.increment(-1),
             'likedBy': FieldValue.arrayRemove([userId]),
           });
         } else {
-          // Like
+          
           await postRef.update({
             'likes': FieldValue.increment(1),
             'likedBy': FieldValue.arrayUnion([userId]),
@@ -349,12 +385,12 @@ class FirestoreService {
     }
   }
 
-  // Create comment
+  
   Future<void> createPostComment(PostComment comment) async {
     try {
       await _firestore.collection('postComments').doc(comment.id).set(comment.toMap());
       
-      // Increment comment count
+      
       await _firestore.collection('communityPosts').doc(comment.postId).update({
         'commentCount': FieldValue.increment(1),
       });
@@ -363,7 +399,7 @@ class FirestoreService {
     }
   }
 
-  // Get post comments
+  
   Stream<List<PostComment>> getPostComments(String postId) {
     return _firestore
         .collection('postComments')
@@ -375,12 +411,12 @@ class FirestoreService {
             .toList());
   }
 
-  // Delete comment
+  
   Future<void> deletePostComment(String commentId, String postId) async {
     try {
       await _firestore.collection('postComments').doc(commentId).delete();
       
-      // Decrement comment count
+      
       await _firestore.collection('communityPosts').doc(postId).update({
         'commentCount': FieldValue.increment(-1),
       });

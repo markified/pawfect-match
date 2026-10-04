@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
@@ -36,7 +36,7 @@ class _MatchRequestsScreenState extends State<MatchRequestsScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Match Requests'),
         backgroundColor: AppColors.primary,
@@ -72,7 +72,7 @@ class _ReceivedRequestsTab extends StatelessWidget {
     final receivedRequests = matchProvider.receivedRequests;
 
     if (receivedRequests.isEmpty) {
-      return _buildEmptyState('No received requests', Icons.inbox_outlined);
+      return _buildEmptyState(context, 'No received requests', Icons.inbox_outlined);
     }
 
     return ListView.builder(
@@ -88,7 +88,7 @@ class _ReceivedRequestsTab extends StatelessWidget {
     );
   }
 
-  Widget _buildEmptyState(String message, IconData icon) {
+  Widget _buildEmptyState(BuildContext context, String message, IconData icon) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -96,13 +96,13 @@ class _ReceivedRequestsTab extends StatelessWidget {
           Icon(
             icon,
             size: 80,
-            color: AppColors.textSecondary.withOpacity(0.5),
+            color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
           ),
           const SizedBox(height: 16),
           Text(
             message,
             style: AppTextStyles.bodyLarge.copyWith(
-              color: AppColors.textSecondary,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
         ],
@@ -120,7 +120,7 @@ class _SentRequestsTab extends StatelessWidget {
     final sentRequests = matchProvider.sentRequests;
 
     if (sentRequests.isEmpty) {
-      return _buildEmptyState('No sent requests', Icons.send_outlined);
+      return _buildEmptyState(context, 'No sent requests', Icons.send_outlined);
     }
 
     return ListView.builder(
@@ -136,7 +136,7 @@ class _SentRequestsTab extends StatelessWidget {
     );
   }
 
-  Widget _buildEmptyState(String message, IconData icon) {
+  Widget _buildEmptyState(BuildContext context, String message, IconData icon) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -144,7 +144,7 @@ class _SentRequestsTab extends StatelessWidget {
           Icon(
             icon,
             size: 80,
-            color: AppColors.textSecondary.withOpacity(0.5),
+            color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
           ),
           const SizedBox(height: 16),
           Text(
@@ -173,7 +173,7 @@ class _RequestCard extends StatelessWidget {
     final dogProvider = context.watch<DogProvider>();
     final dateFormat = DateFormat('MMM dd, yyyy');
 
-    // Get the relevant dog (the other party's dog)
+    
     final dogId = isReceived ? request.requesterDogId : request.targetDogId;
     final dog = dogProvider.allDogs.firstWhere(
       (d) => d.id == dogId,
@@ -217,7 +217,7 @@ class _RequestCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  // Dog image
+                  
                   ClipRRect(
                     borderRadius: BorderRadius.circular(AppSizes.borderRadius),
                     child: dog.imageUrls.isNotEmpty
@@ -235,7 +235,7 @@ class _RequestCard extends StatelessWidget {
                           ),
                   ),
                   const SizedBox(width: 16),
-                  // Dog info
+                  
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -256,7 +256,7 @@ class _RequestCard extends StatelessWidget {
                         Text(
                           dog.breed,
                           style: AppTextStyles.bodyMedium.copyWith(
-                            color: AppColors.textSecondary,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -265,7 +265,7 @@ class _RequestCard extends StatelessWidget {
                             Icon(
                               Icons.calendar_today,
                               size: 14,
-                              color: AppColors.textSecondary,
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
                             ),
                             const SizedBox(width: 4),
                             Text(
@@ -280,7 +280,7 @@ class _RequestCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 12),
-              // Compatibility score
+              
               Row(
                 children: [
                   Icon(
@@ -302,18 +302,18 @@ class _RequestCard extends StatelessWidget {
                       request.compatibilityScore,
                     ),
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
               ),
-              // Message preview
+              
               if (request.message != null && request.message!.isNotEmpty) ...[
                 const SizedBox(height: 12),
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColors.background,
+                      color: Theme.of(context).scaffoldBackgroundColor,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -324,7 +324,7 @@ class _RequestCard extends StatelessWidget {
                   ),
                 ),
               ],
-              // Action buttons for pending received requests
+              
               if (isReceived && request.status == MatchStatus.pending) ...[
                 const SizedBox(height: 12),
                 Row(
@@ -353,6 +353,17 @@ class _RequestCard extends StatelessWidget {
                       ),
                     ),
                   ],
+                ),
+              ],
+              if (request.status == MatchStatus.accepted) ...[
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () => _handleComplete(context, request),
+                    icon: const Icon(Icons.check_circle_outline, size: 18),
+                    label: const Text('Mark as Completed'),
+                  ),
                 ),
               ],
             ],
@@ -453,6 +464,46 @@ class _RequestCard extends StatelessWidget {
       }
     }
   }
+
+  Future<void> _handleComplete(
+    BuildContext context,
+    MatchRequest request,
+  ) async {
+    final matchProvider = context.read<MatchProvider>();
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Mark as Completed'),
+        content: const Text(
+          'Mark this breeding match as completed? You can then leave a review.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Complete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true || !context.mounted) return;
+
+    final success = await matchProvider.updateMatchRequestStatus(
+      request,
+      MatchStatus.completed,
+    );
+
+    if (success && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Match marked as completed!')),
+      );
+    }
+  }
 }
 
 class _StatusBadge extends StatelessWidget {
@@ -483,7 +534,7 @@ class _StatusBadge extends StatelessWidget {
         text = 'Rejected';
         break;
       case MatchStatus.completed:
-        color = Colors.blue;
+        color = AppColors.success;
         icon = Icons.check_circle_outline;
         text = 'Completed';
         break;
@@ -497,7 +548,7 @@ class _StatusBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: color),
       ),

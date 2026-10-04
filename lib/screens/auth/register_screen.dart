@@ -69,7 +69,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Create Account'),
         backgroundColor: AppColors.primary,
@@ -93,12 +93,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 Text(
                   'Create your account to get started',
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.textSecondary,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 32),
-                // Name field
+                
                 CustomTextField(
                   controller: _nameController,
                   label: 'Full Name',
@@ -107,7 +107,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   validator: Validators.validateName,
                 ),
                 const SizedBox(height: 16),
-                // Email field
+                
                 CustomTextField(
                   controller: _emailController,
                   label: 'Email',
@@ -117,7 +117,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   validator: Validators.validateEmail,
                 ),
                 const SizedBox(height: 16),
-                // Phone field (optional)
+                
                 CustomTextField(
                   controller: _phoneController,
                   label: 'Phone Number (Optional)',
@@ -127,7 +127,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   validator: Validators.validatePhoneNumber,
                 ),
                 const SizedBox(height: 16),
-                // Location field (optional)
+                
                 CustomTextField(
                   controller: _locationController,
                   label: 'Location (Optional)',
@@ -135,7 +135,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   prefixIcon: const Icon(Icons.location_on_outlined),
                 ),
                 const SizedBox(height: 16),
-                // Password field
+                
                 CustomTextField(
                   controller: _passwordController,
                   label: 'Password',
@@ -145,7 +145,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   validator: Validators.validatePassword,
                 ),
                 const SizedBox(height: 16),
-                // Confirm password field
+                
                 CustomTextField(
                   controller: _confirmPasswordController,
                   label: 'Confirm Password',
@@ -158,7 +158,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                // Register button
+                
                 Consumer<AuthProvider>(
                   builder: (context, authProvider, child) {
                     return CustomButton(
@@ -169,7 +169,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   },
                 ),
                 const SizedBox(height: 16),
-                // Login link
+                
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

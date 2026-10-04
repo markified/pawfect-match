@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
@@ -31,12 +31,19 @@ class _CommunityScreenState extends State<CommunityScreen> {
     final authProvider = context.watch<AuthProvider>();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Community'),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
-        actions: [
+actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Refresh posts',
+            onPressed: () {
+              communityProvider.listenToCommunityPosts();
+            },
+          ),
           PopupMenuButton<PostCategory?>(
             icon: const Icon(Icons.filter_list),
             tooltip: 'Filter by category',
@@ -101,7 +108,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
             Icon(
               Icons.forum_outlined,
               size: 100,
-              color: AppColors.textSecondary.withOpacity(0.5),
+              color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
             ),
             const SizedBox(height: 24),
             Text('No Posts Yet', style: AppTextStyles.heading2),
@@ -109,7 +116,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
             Text(
               'Be the first to share with the community!',
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
               textAlign: TextAlign.center,
             ),
@@ -191,12 +198,12 @@ class _PostCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Author info
+              
               Row(
                 children: [
                   CircleAvatar(
                     radius: 20,
-                    backgroundColor: AppColors.primary.withOpacity(0.1),
+                    backgroundColor: AppColors.primary.withValues(alpha: 0.1),
                     backgroundImage: post.authorImageUrl != null
                         ? CachedNetworkImageProvider(post.authorImageUrl!)
                         : null,
@@ -228,14 +235,14 @@ class _PostCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  // Category badge
+                  
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: _getCategoryColor(post.category).withOpacity(0.1),
+                      color: _getCategoryColor(post.category).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: _getCategoryColor(post.category),
@@ -252,20 +259,20 @@ class _PostCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 16),
-              // Title
+              
               Text(
                 post.title,
                 style: AppTextStyles.heading3,
               ),
               const SizedBox(height: 8),
-              // Content preview
+              
               Text(
                 post.content,
                 style: AppTextStyles.bodyMedium,
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
               ),
-              // Images
+              
               if (post.imageUrls.isNotEmpty) ...[
                 const SizedBox(height: 12),
                 ClipRRect(
@@ -290,7 +297,7 @@ class _PostCard extends StatelessWidget {
                     child: Text(
                       '+${post.imageUrls.length - 1} more',
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.textSecondary,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ),
@@ -298,13 +305,13 @@ class _PostCard extends StatelessWidget {
               const SizedBox(height: 12),
               const Divider(height: 1),
               const SizedBox(height: 8),
-              // Actions
+              
               Row(
                 children: [
                   _ActionButton(
                     icon: isLiked ? Icons.favorite : Icons.favorite_border,
                     label: post.likes.toString(),
-                    color: isLiked ? Colors.red : AppColors.textSecondary,
+                    color: isLiked ? Colors.red : Theme.of(context).colorScheme.onSurfaceVariant,
                     onTap: () {
                       context
                           .read<CommunityProvider>()
@@ -315,7 +322,7 @@ class _PostCard extends StatelessWidget {
                   _ActionButton(
                     icon: Icons.comment_outlined,
                     label: post.commentCount.toString(),
-                    color: AppColors.textSecondary,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     onTap: () {
                       Navigator.push(
                         context,
@@ -351,7 +358,7 @@ class _PostCard extends StatelessWidget {
       case PostCategory.healthCare:
         return Colors.red;
       case PostCategory.training:
-        return Colors.blue;
+        return AppColors.primary;
       case PostCategory.success:
         return AppColors.success;
       case PostCategory.question:
@@ -363,33 +370,35 @@ class _PostCard extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.edit),
-              title: const Text('Edit Post'),
-              onTap: () {
-                Navigator.pop(context);
-                // Navigate to edit screen
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.delete, color: AppColors.error),
-              title: const Text(
-                'Delete Post',
-                style: TextStyle(color: AppColors.error),
+        child: Material(
+          color: Theme.of(context).cardColor,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.edit),
+                title: const Text('Edit Post'),
+                onTap: () {
+                  Navigator.pop(context);
+                  
+                },
               ),
-              onTap: () async {
-                Navigator.pop(context);
-                final confirm = await showDialog<bool>(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('Delete Post'),
-                    content: const Text(
-                      'Are you sure you want to delete this post? This action cannot be undone.',
-                    ),
-                    actions: [
+              ListTile(
+                leading: const Icon(Icons.delete, color: AppColors.error),
+                title: const Text(
+                  'Delete Post',
+                  style: TextStyle(color: AppColors.error),
+                ),
+                onTap: () async {
+                  Navigator.pop(context);
+                  final confirm = await showDialog<bool>(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Delete Post'),
+                      content: const Text(
+                        'Are you sure you want to delete this post? This action cannot be undone.',
+                      ),
+                      actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context, false),
                         child: const Text('Cancel'),
@@ -417,6 +426,7 @@ class _PostCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
       ),
     );
   }
@@ -456,3 +466,6 @@ class _ActionButton extends StatelessWidget {
     );
   }
 }
+
+
+

@@ -55,6 +55,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
       enabled: widget.enabled,
       onTap: widget.onTap,
       readOnly: widget.readOnly,
+      style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
       decoration: InputDecoration(
         labelText: widget.label,
         hintText: widget.hint,
@@ -63,7 +64,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
             ? IconButton(
                 icon: Icon(
                   _obscureText ? Icons.visibility : Icons.visibility_off,
-                  color: AppColors.textSecondary,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
                 onPressed: () {
                   setState(() {
@@ -74,11 +75,11 @@ class _CustomTextFieldState extends State<CustomTextField> {
             : widget.suffixIcon,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppSizes.borderRadius),
-          borderSide: const BorderSide(color: AppColors.border),
+          borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppSizes.borderRadius),
-          borderSide: const BorderSide(color: AppColors.border),
+          borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppSizes.borderRadius),
@@ -93,7 +94,9 @@ class _CustomTextFieldState extends State<CustomTextField> {
           borderSide: const BorderSide(color: AppColors.error, width: 2),
         ),
         filled: true,
-        fillColor: widget.enabled ? Colors.white : Colors.grey[100],
+        fillColor: widget.enabled
+          ? Theme.of(context).cardColor
+          : Theme.of(context).scaffoldBackgroundColor,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppSizes.paddingMedium,
           vertical: AppSizes.paddingMedium,

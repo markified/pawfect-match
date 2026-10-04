@@ -1,52 +1,79 @@
 import 'dart:io';
-import 'package:firebase_storage/firebase_storage.dart';
+import 'package:cloudinary_public/cloudinary_public.dart';
+import '../config/cloudinary_config.dart';
 
 class StorageService {
-  final FirebaseStorage _storage = FirebaseStorage.instance;
+  
+  final CloudinaryPublic _cloudinary = CloudinaryPublic(
+    CloudinaryConfig.cloudName,
+    CloudinaryConfig.uploadPreset,
+    cache: false,
+  );
 
-  // Upload dog image
+  
   Future<String> uploadDogImage(File imageFile, String dogId) async {
     try {
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final fileName = 'dog_${dogId}_$timestamp.jpg';
-      final ref = _storage.ref().child('dog_images').child(fileName);
+      final fileName = 'dog_${dogId}_$timestamp';
+      
+      final response = await _cloudinary.uploadFile(
+        CloudinaryFile.fromFile(
+          imageFile.path,
+          resourceType: CloudinaryResourceType.Image,
+          folder: 'pawfect/dog_images',
+          publicId: fileName,
+        ),
+      );
 
-      final uploadTask = await ref.putFile(imageFile);
-      final downloadUrl = await uploadTask.ref.getDownloadURL();
-
-      return downloadUrl;
+      return response.secureUrl;
     } catch (e) {
       throw Exception('Failed to upload dog image: $e');
     }
   }
 
-  // Upload user profile image
+  
   Future<String> uploadUserProfileImage(File imageFile, String userId) async {
     try {
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final fileName = 'user_${userId}_$timestamp.jpg';
-      final ref = _storage.ref().child('profile_images').child(fileName);
+      final fileName = 'user_${userId}_$timestamp';
+      
+      final response = await _cloudinary.uploadFile(
+        CloudinaryFile.fromFile(
+          imageFile.path,
+          resourceType: CloudinaryResourceType.Image,
+          folder: 'pawfect/profile_images',
+          publicId: fileName,
+        ),
+      );
 
-      final uploadTask = await ref.putFile(imageFile);
-      final downloadUrl = await uploadTask.ref.getDownloadURL();
-
-      return downloadUrl;
+      return response.secureUrl;
     } catch (e) {
       throw Exception('Failed to upload profile image: $e');
     }
   }
 
-  // Delete image by URL
+  
   Future<void> deleteImage(String imageUrl) async {
     try {
-      final ref = _storage.refFromURL(imageUrl);
-      await ref.delete();
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
     } catch (e) {
-      throw Exception('Failed to delete image: $e');
+      
     }
   }
 
-  // Upload multiple dog images
+  
   Future<List<String>> uploadMultipleDogImages(
     List<File> imageFiles,
     String dogId,
@@ -55,8 +82,19 @@ class StorageService {
       final List<String> downloadUrls = [];
       
       for (int i = 0; i < imageFiles.length; i++) {
-        final url = await uploadDogImage(imageFiles[i], '${dogId}_$i');
-        downloadUrls.add(url);
+        final timestamp = DateTime.now().millisecondsSinceEpoch;
+        final fileName = 'dog_${dogId}_${i}_$timestamp';
+        
+        final response = await _cloudinary.uploadFile(
+          CloudinaryFile.fromFile(
+            imageFiles[i].path,
+            resourceType: CloudinaryResourceType.Image,
+            folder: 'pawfect/dog_images',
+            publicId: fileName,
+          ),
+        );
+        
+        downloadUrls.add(response.secureUrl);
       }
       
       return downloadUrls;
@@ -65,20 +103,75 @@ class StorageService {
     }
   }
 
-  // Upload community post image
+  
   Future<String?> uploadPostImage(File imageFile, String userId) async {
     try {
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final fileName = 'post_${userId}_$timestamp.jpg';
-      final ref = _storage.ref().child('post_images').child(fileName);
+      final fileName = 'post_${userId}_$timestamp';
+      
+      final response = await _cloudinary.uploadFile(
+        CloudinaryFile.fromFile(
+          imageFile.path,
+          resourceType: CloudinaryResourceType.Image,
+          folder: 'pawfect/post_images',
+          publicId: fileName,
+        ),
+      );
 
-      final uploadTask = await ref.putFile(imageFile);
-      final downloadUrl = await uploadTask.ref.getDownloadURL();
-
-      return downloadUrl;
+      return response.secureUrl;
     } catch (e) {
-      // Log error silently or use a logging framework
+      
       return null;
     }
+  }
+
+  
+  String getOptimizedImageUrl(
+    String imageUrl, {
+    int? width,
+    int? height,
+    String quality = 'auto',
+    String format = 'auto',
+  }) {
+    try {
+      final uri = Uri.parse(imageUrl);
+      if (!uri.host.contains('cloudinary.com')) {
+        return imageUrl; 
+      }
+
+      
+      final transformations = <String>[];
+      if (width != null) transformations.add('w_$width');
+      if (height != null) transformations.add('h_$height');
+      transformations.add('q_$quality');
+      transformations.add('f_$format');
+      
+      final transformStr = transformations.join(',');
+      
+      
+      final path = uri.path;
+      final uploadIndex = path.indexOf('/upload/');
+      if (uploadIndex != -1) {
+        final beforeUpload = path.substring(0, uploadIndex + 8);
+        final afterUpload = path.substring(uploadIndex + 8);
+        final newPath = '$beforeUpload$transformStr/$afterUpload';
+        
+        return uri.replace(path: newPath).toString();
+      }
+      
+      return imageUrl;
+    } catch (e) {
+      return imageUrl;
+    }
+  }
+
+  
+  String getThumbnailUrl(String imageUrl, {int size = 150}) {
+    return getOptimizedImageUrl(
+      imageUrl,
+      width: size,
+      height: size,
+      quality: 'auto:low',
+    );
   }
 }

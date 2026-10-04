@@ -13,7 +13,7 @@ class MyDogsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('My Dogs'),
         backgroundColor: AppColors.primary,
@@ -63,7 +63,7 @@ class MyDogsScreen extends StatelessWidget {
             Icon(
               Icons.pets,
               size: 100,
-              color: AppColors.textSecondary.withOpacity(0.5),
+              color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
             ),
             const SizedBox(height: 24),
             Text(
@@ -74,7 +74,7 @@ class MyDogsScreen extends StatelessWidget {
             Text(
               'Add your first dog to start matching',
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
               textAlign: TextAlign.center,
             ),
@@ -131,7 +131,7 @@ class _DogCard extends StatelessWidget {
           padding: const EdgeInsets.all(AppSizes.paddingMedium),
           child: Row(
             children: [
-              // Dog image
+              
               ClipRRect(
                 borderRadius: BorderRadius.circular(AppSizes.borderRadius),
                 child: dog.imageUrls.isNotEmpty
@@ -163,7 +163,7 @@ class _DogCard extends StatelessWidget {
                       ),
               ),
               const SizedBox(width: 16),
-              // Dog info
+              
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -190,7 +190,7 @@ class _DogCard extends StatelessWidget {
                     Text(
                       dog.breed,
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.textSecondary,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -221,8 +221,8 @@ class _DogCard extends StatelessWidget {
                           ),
                           decoration: BoxDecoration(
                             color: dog.isAvailableForBreeding
-                                ? AppColors.success.withOpacity(0.1)
-                                : AppColors.error.withOpacity(0.1),
+                                ? AppColors.success.withValues(alpha: 0.1)
+                                : AppColors.error.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
@@ -242,10 +242,10 @@ class _DogCard extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(
+              Icon(
                 Icons.arrow_forward_ios,
                 size: 16,
-                color: AppColors.textSecondary,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ],
           ),

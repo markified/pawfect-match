@@ -104,7 +104,7 @@ class _SubmitReviewScreenState extends State<SubmitReviewScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Submit Review'),
         backgroundColor: AppColors.primary,
@@ -117,10 +117,10 @@ class _SubmitReviewScreenState extends State<SubmitReviewScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Dog card
+              
               _buildDogCard(),
               const SizedBox(height: 24),
-              // Rating section
+              
               Text(
                 'How was your experience?',
                 style: AppTextStyles.heading3,
@@ -158,7 +158,7 @@ class _SubmitReviewScreenState extends State<SubmitReviewScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              // Comment section
+              
               Text(
                 'Tell us more about your experience',
                 style: AppTextStyles.heading3,
@@ -167,7 +167,7 @@ class _SubmitReviewScreenState extends State<SubmitReviewScreen> {
               Text(
                 'Share details about the breeding process, communication, and overall satisfaction',
                 style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.textSecondary,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
               const SizedBox(height: 12),
@@ -192,14 +192,14 @@ class _SubmitReviewScreenState extends State<SubmitReviewScreen> {
                 },
               ),
               const SizedBox(height: 24),
-              // Guidelines
+              
               Container(
                 padding: const EdgeInsets.all(AppSizes.paddingMedium),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
+                  color: AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AppSizes.borderRadius),
                   border: Border.all(
-                    color: AppColors.primary.withOpacity(0.3),
+                    color: AppColors.primary.withValues(alpha: 0.3),
                   ),
                 ),
                 child: Column(
@@ -231,7 +231,7 @@ class _SubmitReviewScreenState extends State<SubmitReviewScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              // Submit button
+              
               CustomButton(
                 text: 'Submit Review',
                 onPressed: _submitReview,
@@ -250,11 +250,11 @@ class _SubmitReviewScreenState extends State<SubmitReviewScreen> {
     return Container(
       padding: const EdgeInsets.all(AppSizes.paddingMedium),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(AppSizes.borderRadius),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -286,7 +286,7 @@ class _SubmitReviewScreenState extends State<SubmitReviewScreen> {
                 Text(
                   'Review for',
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
                 Text(
@@ -297,7 +297,7 @@ class _SubmitReviewScreenState extends State<SubmitReviewScreen> {
                 Text(
                   widget.targetDog.breed,
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.textSecondary,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
               ],

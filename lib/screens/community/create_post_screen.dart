@@ -84,7 +84,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     });
 
     try {
-      // Upload images if any
+      
       List<String> imageUrls = [];
       if (_selectedImages.isNotEmpty) {
         for (var image in _selectedImages) {
@@ -98,7 +98,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         }
       }
 
-      // Create post
+      
       final post = CommunityPost(
         id: '${authProvider.currentUser!.uid}_${DateTime.now().millisecondsSinceEpoch}',
         authorId: authProvider.currentUser!.uid,
@@ -149,7 +149,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Create Post'),
         backgroundColor: AppColors.primary,
@@ -162,11 +162,11 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Category selector
+              
               Text('Category', style: AppTextStyles.bodyMedium),
               const SizedBox(height: 8),
               DropdownButtonFormField<PostCategory>(
-                value: _selectedCategory,
+                initialValue: _selectedCategory,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(AppSizes.borderRadius),
@@ -191,7 +191,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 },
               ),
               const SizedBox(height: 16),
-              // Title
+              
               Text('Title', style: AppTextStyles.bodyMedium),
               const SizedBox(height: 8),
               CustomTextField(
@@ -209,7 +209,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 },
               ),
               const SizedBox(height: 16),
-              // Content
+              
               Text('Content', style: AppTextStyles.bodyMedium),
               const SizedBox(height: 8),
               TextFormField(
@@ -233,7 +233,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 },
               ),
               const SizedBox(height: 16),
-              // Images
+              
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -295,7 +295,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 ),
               ],
               const SizedBox(height: 24),
-              // Submit button
+              
               CustomButton(
                 text: 'Publish Post',
                 onPressed: _createPost,

@@ -1,51 +1,46 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  static const Color primary = Color(0xFF6C63FF);
-  static const Color secondary = Color(0xFFFF6584);
-  static const Color accent = Color(0xFFFFA500);
-  static const Color background = Color(0xFFF5F5F5);
-  static const Color cardBackground = Colors.white;
-  static const Color textPrimary = Color(0xFF2D3436);
-  static const Color textSecondary = Color(0xFF636E72);
-  static const Color success = Color(0xFF00B894);
-  static const Color warning = Color(0xFFFDCB6E);
-  static const Color error = Color(0xFFD63031);
-  static const Color border = Color(0xFFDFE6E9);
+  
+  static const Color primary = Color(0xFF0369A1);
+  static const Color secondary = Color(0xFFB91C1C);
+  static const Color accent = Color(0xFFFCA5A5);
+  static const Color background = Color(0xFF202126);
+  static const Color cardBackground = Color(0xFF2A2C32);
+  static const Color textPrimary = Color(0xFFF1F5F9);
+  static const Color textSecondary = Color(0xFFB8C0CC);
+  static const Color success = Color(0xFF5BC58A);
+  static const Color warning = Color(0xFFF4C95D);
+  static const Color error = Color(0xFFE57373);
+  static const Color border = Color(0xFF41454F);
 }
 
 class AppTextStyles {
   static const TextStyle heading1 = TextStyle(
     fontSize: 28,
     fontWeight: FontWeight.bold,
-    color: AppColors.textPrimary,
   );
 
   static const TextStyle heading2 = TextStyle(
     fontSize: 22,
     fontWeight: FontWeight.bold,
-    color: AppColors.textPrimary,
   );
 
   static const TextStyle heading3 = TextStyle(
     fontSize: 18,
     fontWeight: FontWeight.w600,
-    color: AppColors.textPrimary,
   );
 
   static const TextStyle bodyLarge = TextStyle(
     fontSize: 16,
-    color: AppColors.textPrimary,
   );
 
   static const TextStyle bodyMedium = TextStyle(
     fontSize: 14,
-    color: AppColors.textPrimary,
   );
 
   static const TextStyle bodySmall = TextStyle(
     fontSize: 12,
-    color: AppColors.textSecondary,
   );
 
   static const TextStyle buttonText = TextStyle(

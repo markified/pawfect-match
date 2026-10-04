@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:intl/intl.dart';
 import '../../models/review.dart';
@@ -20,7 +20,7 @@ class _ReputationScreenState extends State<ReputationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Reputation & Reviews'),
         backgroundColor: AppColors.primary,
@@ -44,10 +44,10 @@ class _ReputationScreenState extends State<ReputationScreen> {
           return SingleChildScrollView(
             child: Column(
               children: [
-                // Overall stats
+                
                 _buildOverallStats(reviews),
                 const SizedBox(height: 24),
-                // Reviews list
+                
                 Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppSizes.paddingMedium,
@@ -86,7 +86,7 @@ class _ReputationScreenState extends State<ReputationScreen> {
       averageRating = totalRating / reviews.length;
     }
 
-    // Rating distribution
+    
     Map<int, int> distribution = {5: 0, 4: 0, 3: 0, 2: 0, 1: 0};
     for (var review in reviews) {
       distribution[review.rating.round()] =
@@ -98,7 +98,7 @@ class _ReputationScreenState extends State<ReputationScreen> {
       padding: const EdgeInsets.all(AppSizes.paddingLarge),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppColors.accent, AppColors.accent.withOpacity(0.7)],
+          colors: [AppColors.accent, AppColors.accent.withValues(alpha: 0.7)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -132,11 +132,11 @@ class _ReputationScreenState extends State<ReputationScreen> {
           Text(
             '${reviews.length} ${reviews.length == 1 ? 'Review' : 'Reviews'}',
             style: AppTextStyles.bodyLarge.copyWith(
-              color: Colors.white.withOpacity(0.9),
+              color: Colors.white.withValues(alpha: 0.9),
             ),
           ),
           const SizedBox(height: 24),
-          // Rating distribution
+          
           if (reviews.isNotEmpty)
             Column(
               children: [5, 4, 3, 2, 1].map((stars) {
@@ -162,7 +162,7 @@ class _ReputationScreenState extends State<ReputationScreen> {
                           child: LinearProgressIndicator(
                             value: percentage,
                             minHeight: 8,
-                            backgroundColor: Colors.white.withOpacity(0.3),
+                            backgroundColor: Colors.white.withValues(alpha: 0.3),
                             valueColor: const AlwaysStoppedAnimation<Color>(
                               Colors.white,
                             ),
@@ -199,7 +199,7 @@ class _ReputationScreenState extends State<ReputationScreen> {
             Icon(
               Icons.rate_review_outlined,
               size: 80,
-              color: AppColors.textSecondary.withOpacity(0.5),
+              color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
             ),
             const SizedBox(height: 16),
             Text(
@@ -210,7 +210,7 @@ class _ReputationScreenState extends State<ReputationScreen> {
             Text(
               'Reviews from completed matches will appear here',
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
               textAlign: TextAlign.center,
             ),
@@ -244,7 +244,7 @@ class _ReviewCard extends StatelessWidget {
             Row(
               children: [
                 CircleAvatar(
-                  backgroundColor: AppColors.primary.withOpacity(0.1),
+                  backgroundColor: AppColors.primary.withValues(alpha: 0.1),
                   child: Text(
                     review.reviewerName[0].toUpperCase(),
                     style: AppTextStyles.bodyMedium.copyWith(

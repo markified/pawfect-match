@@ -1,17 +1,22 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/dog_provider.dart';
 import '../../providers/match_provider.dart';
+import '../../models/match_request.dart';
 import '../../utils/constants.dart';
 import '../dogs/add_dog_screen.dart';
 import '../requests/match_requests_screen.dart';
 
 class DashboardTab extends StatelessWidget {
-  const DashboardTab({super.key});
+  final Function(int)? onNavigateToTab;
+  
+  const DashboardTab({super.key, this.onNavigateToTab});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final authProvider = context.watch<AuthProvider>();
     final dogProvider = context.watch<DogProvider>();
     final matchProvider = context.watch<MatchProvider>();
@@ -21,7 +26,7 @@ class DashboardTab extends StatelessWidget {
     final pendingRequestsCount = matchProvider.pendingReceivedRequests.length;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Pawfect Match'),
         backgroundColor: AppColors.primary,
@@ -74,13 +79,13 @@ class DashboardTab extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Welcome section
+            
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(AppSizes.paddingLarge),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [AppColors.primary, AppColors.primary.withOpacity(0.7)],
+                  colors: [AppColors.primary, AppColors.primary.withValues(alpha: 0.7)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -97,14 +102,14 @@ class DashboardTab extends StatelessWidget {
                   Text(
                     'Find the perfect breeding partner for your dogs',
                     style: AppTextStyles.bodyMedium.copyWith(
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha: 0.9),
                     ),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 24),
-            // Quick stats
+            
             Row(
               children: [
                 Expanded(
@@ -127,7 +132,7 @@ class DashboardTab extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 24),
-            // Quick actions
+            
             Text(
               'Quick Actions',
               style: AppTextStyles.heading3,
@@ -155,8 +160,8 @@ class DashboardTab extends StatelessWidget {
                     subtitle: 'Discover compatible breeding partners',
                     color: AppColors.primary,
                     onTap: () {
-                      // Switch to matcher tab
-                      DefaultTabController.of(context).animateTo(1);
+                      
+                      onNavigateToTab?.call(1);
                     },
                   ),
                   const SizedBox(height: 12),
@@ -175,21 +180,37 @@ class DashboardTab extends StatelessWidget {
                 ],
               ),
             const SizedBox(height: 24),
-            // Recent matches section
-            if (matchProvider.sentRequests.isNotEmpty ||
-                matchProvider.receivedRequests.isNotEmpty) ...[
-              Text(
-                'Recent Activity',
-                style: AppTextStyles.heading3,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Recent matches will appear here',
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-              ),
-            ],
+            
+            const SizedBox(height: 24),
+            Text(
+              'Recent Activity',
+              style: AppTextStyles.heading3,
+            ),
+            const SizedBox(height: 16),
+            Builder(
+              builder: (context) {
+                final recentRequests = [
+                  ...matchProvider.sentRequests,
+                  ...matchProvider.receivedRequests,
+                ]..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+                final recentActivity = recentRequests.take(5).toList();
+
+                if (recentActivity.isEmpty) {
+                  return _buildEmptyActivity(context);
+                }
+
+                return Column(
+                  children: recentActivity.map((request) {
+                    final isReceived = request.targetOwnerId == authProvider.currentUser?.uid;
+                    return _ActivityItem(
+                      matchRequest: request,
+                      isReceived: isReceived,
+                    );
+                  }).toList(),
+                );
+              },
+            ),
           ],
         ),
       ),
@@ -212,14 +233,16 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.all(AppSizes.paddingMedium),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(AppSizes.borderRadius),
+        border: Border.all(color: theme.colorScheme.primary),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -266,11 +289,12 @@ class _ActionCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(AppSizes.paddingMedium),
         decoration: BoxDecoration(
-          color: Colors.white,
+            color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(AppSizes.borderRadius),
+            border: Border.all(color: Theme.of(context).colorScheme.primary),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -281,7 +305,7 @@ class _ActionCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, color: color, size: 28),
@@ -300,10 +324,117 @@ class _ActionCard extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(Icons.arrow_forward_ios, size: 16, color: AppColors.textSecondary),
+            Icon(Icons.arrow_forward_ios, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
           ],
         ),
       ),
     );
+  }
+}
+
+Widget _buildEmptyActivity(BuildContext context) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 16),
+    child: Center(
+      child: Text(
+        'No recent activity',
+        style: AppTextStyles.bodyMedium.copyWith(
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+      ),
+    ),
+  );
+}
+
+class _ActivityItem extends StatelessWidget {
+  final MatchRequest matchRequest;
+  final bool isReceived;
+
+  const _ActivityItem({
+    required this.matchRequest,
+    required this.isReceived,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final timeAgo = _formatTimeAgo(matchRequest.createdAt);
+    final statusColor = matchRequest.status == MatchStatus.accepted
+        ? Colors.green
+        : matchRequest.status == MatchStatus.rejected
+            ? Colors.red
+            : Colors.orange;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          CircleAvatar(
+            backgroundColor: AppColors.primary.withValues(alpha: 0.2),
+            child: Icon(
+              isReceived ? Icons.arrow_downward : Icons.arrow_upward,
+              color: AppColors.primary,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  isReceived
+                      ? 'Received match request'
+                      : 'Sent match request',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                Text(
+                  timeAgo,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 8,
+              vertical: 4,
+            ),
+            decoration: BoxDecoration(
+              color: statusColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              matchRequest.status.name.toUpperCase(),
+              style: AppTextStyles.bodySmall.copyWith(
+                color: statusColor,
+                fontWeight: FontWeight.bold,
+                fontSize: 10,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatTimeAgo(DateTime dateTime) {
+    final now = DateTime.now();
+    final difference = now.difference(dateTime);
+
+    if (difference.inDays > 7) {
+      return DateFormat('MMM d').format(dateTime);
+    } else if (difference.inDays > 0) {
+      return '${difference.inDays}d ago';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours}h ago';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes}m ago';
+    } else {
+      return 'Just now';
+    }
   }
 }

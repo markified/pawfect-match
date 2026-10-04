@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+
 import '../../providers/auth_provider.dart';
-import '../../services/firestore_service.dart';
+import '../../providers/dog_provider.dart';
+import '../../providers/match_provider.dart';
+import '../../providers/theme_provider.dart';
+import '../../models/match_request.dart';
 import '../../utils/constants.dart';
 import '../auth/login_screen.dart';
 import 'reputation_screen.dart';
@@ -17,27 +21,6 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  final FirestoreService _firestoreService = FirestoreService();
-  int _completedMatches = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadStats();
-  }
-
-  Future<void> _loadStats() async {
-    final authProvider = context.read<AuthProvider>();
-    if (authProvider.currentUser != null) {
-      final count = await _firestoreService.getCompletedMatchesCount(
-        authProvider.currentUser!.uid,
-      );
-      setState(() {
-        _completedMatches = count;
-      });
-    }
-  }
-
   Future<void> _handleSignOut() async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -70,31 +53,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Profile'),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: _handleSignOut,
-          ),
+          IconButton(icon: const Icon(Icons.logout), onPressed: _handleSignOut),
         ],
       ),
-      body: Consumer<AuthProvider>(
-        builder: (context, authProvider, child) {
+      body: Consumer3<AuthProvider, DogProvider, MatchProvider>(
+        builder: (context, authProvider, dogProvider, matchProvider, child) {
           final user = authProvider.currentUser;
-          
+
           if (user == null) {
             return const Center(child: Text('No user data'));
           }
 
+          final dogCount = dogProvider.userDogs.length;
+          final completedMatchesCount = [
+            ...matchProvider.sentRequests,
+            ...matchProvider.receivedRequests,
+          ].where((r) => r.status == MatchStatus.completed).length;
+
           return SingleChildScrollView(
             child: Column(
               children: [
-                // Profile header
+                
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(AppSizes.paddingLarge),
@@ -102,7 +89,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     gradient: LinearGradient(
                       colors: [
                         AppColors.primary,
-                        AppColors.primary.withOpacity(0.7)
+                        AppColors.primary.withValues(alpha: 0.7),
                       ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -110,7 +97,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   child: Column(
                     children: [
-                      // Profile image
+                      
                       CircleAvatar(
                         radius: 50,
                         backgroundColor: Colors.white,
@@ -140,7 +127,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Text(
                         user.email,
                         style: AppTextStyles.bodyMedium.copyWith(
-                          color: Colors.white.withOpacity(0.9),
+                          color: Colors.white.withValues(alpha: 0.9),
                         ),
                       ),
                       if (user.isVerified)
@@ -179,7 +166,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                // Stats section
+                
                 Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppSizes.paddingMedium,
@@ -190,7 +177,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         child: _StatCard(
                           icon: Icons.pets,
                           title: 'My Dogs',
-                          value: user.dogIds.length.toString(),
+                          value: dogCount.toString(),
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -198,14 +185,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         child: _StatCard(
                           icon: Icons.check_circle,
                           title: 'Matches',
-                          value: _completedMatches.toString(),
+                          value: completedMatchesCount.toString(),
                         ),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 24),
-                // Menu items
+                
                 Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppSizes.paddingMedium,
@@ -219,7 +206,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => ReputationScreen(userId: user.uid),
+                              builder: (_) =>
+                                  ReputationScreen(userId: user.uid),
                             ),
                           );
                         },
@@ -227,7 +215,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       _MenuItem(
                         icon: Icons.check_circle_outline,
                         title: 'Completed Matches',
-                        subtitle: '$_completedMatches completed',
+                        subtitle: '`$completedMatchesCount completed',
                         onTap: () {
                           Navigator.push(
                             context,
@@ -248,10 +236,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               builder: (_) => const EditProfileScreen(),
                             ),
                           );
-                          // Reload stats after returning
-                          _loadStats();
                         },
                       ),
+                      _ThemeMenuItem(),
                       _MenuItem(
                         icon: Icons.phone,
                         title: 'Contact Information',
@@ -263,14 +250,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               builder: (_) => const EditProfileScreen(),
                             ),
                           );
-                          _loadStats();
-                        },
-                      ),
-                      _MenuItem(
-                        icon: Icons.help_outline,
-                        title: 'Help & Support',
-                        onTap: () {
-                          // Navigate to help
                         },
                       ),
                       _MenuItem(
@@ -323,11 +302,11 @@ class _StatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSizes.paddingMedium),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(AppSizes.borderRadius),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -347,6 +326,36 @@ class _StatCard extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ThemeMenuItem extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          return SwitchListTile(
+            secondary: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                themeProvider.isDarkMode ? Icons.dark_mode : Icons.light_mode,
+                color: AppColors.primary,
+              ),
+            ),
+            title: const Text('Dark Mode'),
+            subtitle: Text(themeProvider.isDarkMode ? 'On' : 'Off'),
+            value: themeProvider.isDarkMode,
+            onChanged: themeProvider.toggleTheme,
+          );
+        },
       ),
     );
   }
@@ -377,22 +386,19 @@ class _MenuItem extends StatelessWidget {
         leading: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: AppColors.primary.withOpacity(0.1),
+            color: AppColors.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(icon, color: AppColors.primary),
         ),
         title: Text(title, style: AppTextStyles.bodyMedium),
         subtitle: subtitle != null
-            ? Text(
-                subtitle!,
-                style: AppTextStyles.bodySmall,
-              )
+            ? Text(subtitle!, style: AppTextStyles.bodySmall)
             : null,
-        trailing: const Icon(
+        trailing: Icon(
           Icons.arrow_forward_ios,
           size: 16,
-          color: AppColors.textSecondary,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
         onTap: onTap,
       ),

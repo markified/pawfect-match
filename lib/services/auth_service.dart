@@ -6,13 +6,13 @@ class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Get current user
+  
   User? get currentUser => _auth.currentUser;
 
-  // Auth state changes stream
+  
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
-  // Sign up with email and password
+  
   Future<UserModel?> signUp({
     required String email,
     required String password,
@@ -21,13 +21,13 @@ class AuthService {
     String? location,
   }) async {
     try {
-      // Create user in Firebase Auth
+      
       UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
 
-      // Create user document in Firestore
+      
       final userModel = UserModel(
         uid: userCredential.user!.uid,
         email: email,
@@ -52,7 +52,7 @@ class AuthService {
     }
   }
 
-  // Sign in with email and password
+  
   Future<UserModel?> signIn({
     required String email,
     required String password,
@@ -63,7 +63,7 @@ class AuthService {
         password: password,
       );
 
-      // Get user data from Firestore
+      
       final userDoc = await _firestore
           .collection('users')
           .doc(userCredential.user!.uid)
@@ -80,7 +80,7 @@ class AuthService {
     }
   }
 
-  // Sign out
+  
   Future<void> signOut() async {
     try {
       await _auth.signOut();
@@ -89,7 +89,7 @@ class AuthService {
     }
   }
 
-  // Get user data
+  
   Future<UserModel?> getUserData(String uid) async {
     try {
       final userDoc = await _firestore.collection('users').doc(uid).get();
@@ -102,7 +102,7 @@ class AuthService {
     }
   }
 
-  // Update user data
+  
   Future<void> updateUserData(UserModel user) async {
     try {
       await _firestore.collection('users').doc(user.uid).update(user.toMap());
@@ -111,7 +111,7 @@ class AuthService {
     }
   }
 
-  // Update user profile (name, phone, location, image)
+  
   Future<void> updateUserProfile(UserModel user) async {
     try {
       await _firestore.collection('users').doc(user.uid).update({
@@ -125,7 +125,7 @@ class AuthService {
     }
   }
 
-  // Reset password
+  
   Future<void> resetPassword(String email) async {
     try {
       await _auth.sendPasswordResetEmail(email: email);
@@ -136,7 +136,7 @@ class AuthService {
     }
   }
 
-  // Handle Firebase Auth exceptions
+  
   String _handleAuthException(FirebaseAuthException e) {
     switch (e.code) {
       case 'weak-password':

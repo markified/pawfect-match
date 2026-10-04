@@ -36,18 +36,41 @@ class _DogDetailScreenState extends State<DogDetailScreen> {
   }
 
   Future<void> _loadDogProfile() async {
-    final dog = await _firestoreService.getDogProfile(widget.dogId);
-    if (dog != null) {
-      final owner = await _firestoreService.getUserById(dog.ownerId);
-      setState(() {
-        _dog = dog;
-        _owner = owner;
-        _isLoading = false;
-      });
-    } else {
-      setState(() {
-        _isLoading = false;
-      });
+    try {
+      final dogId = widget.dogId.trim();
+      if (dogId.isEmpty) {
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
+        return;
+      }
+
+      final dog = await _firestoreService.getDogProfile(dogId);
+      if (dog == null) {
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
+        return;
+      }
+
+      final owner = dog.ownerId.trim().isEmpty
+          ? null
+          : await _firestoreService.getUserById(dog.ownerId);
+
+      if (mounted) {
+        setState(() {
+          _dog = dog;
+          _owner = owner;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Unable to load this dog profile.')),
+        );
+      }
     }
   }
 
@@ -116,7 +139,7 @@ class _DogDetailScreenState extends State<DogDetailScreen> {
     final isOwner = context.read<AuthProvider>().currentUser?.uid == _dog!.ownerId;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
@@ -156,7 +179,7 @@ class _DogDetailScreenState extends State<DogDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Name and sex
+                  
                   Row(
                     children: [
                       Expanded(
@@ -170,7 +193,7 @@ class _DogDetailScreenState extends State<DogDetailScreen> {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  // Rating
+                  
                   if (_dog!.rating > 0)
                     Row(
                       children: [
@@ -191,7 +214,7 @@ class _DogDetailScreenState extends State<DogDetailScreen> {
                       ],
                     ),
                   const SizedBox(height: 16),
-                  // Availability status
+                  
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
@@ -199,8 +222,8 @@ class _DogDetailScreenState extends State<DogDetailScreen> {
                     ),
                     decoration: BoxDecoration(
                       color: _dog!.isAvailableForBreeding
-                          ? AppColors.success.withOpacity(0.1)
-                          : AppColors.error.withOpacity(0.1),
+                          ? AppColors.success.withValues(alpha: 0.1)
+                          : AppColors.error.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
                         color: _dog!.isAvailableForBreeding
@@ -221,7 +244,7 @@ class _DogDetailScreenState extends State<DogDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  // Details section
+                  
                   _buildInfoSection('Basic Information', [
                     _InfoRow(label: 'Breed', value: _dog!.breed),
                     _InfoRow(label: 'Age', value: _dog!.ageDisplay),
@@ -229,22 +252,22 @@ class _DogDetailScreenState extends State<DogDetailScreen> {
                     _InfoRow(label: 'Color', value: _dog!.color),
                   ]),
                   const SizedBox(height: 24),
-                  // Temperament
+                  
                   _buildTemperamentSection(),
                   const SizedBox(height: 24),
-                  // Health info
+                  
                   if (_dog!.healthInfo != null) ...[
                     _buildInfoSection('Health Information', [
                       _InfoRow(label: '', value: _dog!.healthInfo!),
                     ]),
                     const SizedBox(height: 24),
                   ],
-                  // Owner info
+                  
                   if (_owner != null && !isOwner) ...[
                     _buildOwnerSection(),
                     const SizedBox(height: 24),
                   ],
-                  // Reviews section
+                  
                   _buildReviewsSection(),
                   const SizedBox(height: 24),
                 ],
@@ -306,7 +329,7 @@ class _DogDetailScreenState extends State<DogDetailScreen> {
                     shape: BoxShape.circle,
                     color: _currentImageIndex == index
                         ? Colors.white
-                        : Colors.white.withOpacity(0.5),
+                        : Colors.white.withValues(alpha: 0.5),
                   ),
                 );
               }),
@@ -325,11 +348,11 @@ class _DogDetailScreenState extends State<DogDetailScreen> {
         Container(
           padding: const EdgeInsets.all(AppSizes.paddingMedium),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(AppSizes.borderRadius),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -355,7 +378,7 @@ class _DogDetailScreenState extends State<DogDetailScreen> {
               label: Text(
                 temp.name[0].toUpperCase() + temp.name.substring(1),
               ),
-              backgroundColor: AppColors.primary.withOpacity(0.1),
+              backgroundColor: AppColors.primary.withValues(alpha: 0.1),
               labelStyle: AppTextStyles.bodyMedium.copyWith(
                 color: AppColors.primary,
               ),
@@ -384,11 +407,11 @@ class _DogDetailScreenState extends State<DogDetailScreen> {
           child: Container(
             padding: const EdgeInsets.all(AppSizes.paddingMedium),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(AppSizes.borderRadius),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -398,7 +421,7 @@ class _DogDetailScreenState extends State<DogDetailScreen> {
               children: [
                 CircleAvatar(
                   radius: 30,
-                  backgroundColor: AppColors.primary.withOpacity(0.1),
+                  backgroundColor: AppColors.primary.withValues(alpha: 0.1),
                   backgroundImage: _owner!.profileImageUrl != null
                       ? CachedNetworkImageProvider(_owner!.profileImageUrl!)
                       : null,
@@ -441,7 +464,7 @@ class _DogDetailScreenState extends State<DogDetailScreen> {
                             Icon(
                               Icons.location_on,
                               size: 14,
-                              color: AppColors.textSecondary,
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
                             ),
                             const SizedBox(width: 4),
                             Text(
@@ -454,10 +477,10 @@ class _DogDetailScreenState extends State<DogDetailScreen> {
                     ],
                   ),
                 ),
-                const Icon(
+                Icon(
                   Icons.arrow_forward_ios,
                   size: 16,
-                  color: AppColors.textSecondary,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ],
             ),
@@ -478,7 +501,7 @@ class _DogDetailScreenState extends State<DogDetailScreen> {
             if (_dog!.ratingCount > 0)
               TextButton(
                 onPressed: () {
-                  // Navigate to all reviews
+                  
                 },
                 child: const Text('See All'),
               ),
@@ -496,11 +519,11 @@ class _DogDetailScreenState extends State<DogDetailScreen> {
               return Container(
                 padding: const EdgeInsets.all(AppSizes.paddingLarge),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).cardColor,
                   borderRadius: BorderRadius.circular(AppSizes.borderRadius),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -510,7 +533,7 @@ class _DogDetailScreenState extends State<DogDetailScreen> {
                   child: Text(
                     'No reviews yet',
                     style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.textSecondary,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ),
@@ -556,7 +579,7 @@ class _InfoRow extends StatelessWidget {
             child: Text(
               label,
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
           ),
@@ -587,11 +610,11 @@ class _ReviewCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(AppSizes.paddingMedium),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(AppSizes.borderRadius),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -604,7 +627,7 @@ class _ReviewCard extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 20,
-                backgroundColor: AppColors.primary.withOpacity(0.1),
+                backgroundColor: AppColors.primary.withValues(alpha: 0.1),
                 child: Text(
                   review.reviewerName[0].toUpperCase(),
                   style: AppTextStyles.bodyMedium.copyWith(

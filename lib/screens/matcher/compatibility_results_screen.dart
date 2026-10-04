@@ -71,8 +71,8 @@ class _CompatibilityResultsScreenState
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(context); // Close dialog
-                Navigator.pop(context); // Go back to matcher
+                Navigator.pop(context); 
+                Navigator.pop(context); 
               },
               child: const Text('OK'),
             ),
@@ -116,7 +116,7 @@ class _CompatibilityResultsScreenState
     }
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Compatibility Results'),
         backgroundColor: AppColors.primary,
@@ -125,13 +125,13 @@ class _CompatibilityResultsScreenState
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Overall score section
+            
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(AppSizes.paddingLarge),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [ratingColor, ratingColor.withOpacity(0.7)],
+                  colors: [ratingColor, ratingColor.withValues(alpha: 0.7)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -162,7 +162,7 @@ class _CompatibilityResultsScreenState
                   Text(
                     '${widget.selectedDog.name} & ${widget.targetDog.name}',
                     style: AppTextStyles.bodyLarge.copyWith(
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha: 0.9),
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -170,7 +170,7 @@ class _CompatibilityResultsScreenState
               ),
             ),
             const SizedBox(height: 24),
-            // Compatibility breakdown
+            
             Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: AppSizes.paddingMedium,
@@ -204,7 +204,7 @@ class _CompatibilityResultsScreenState
                     weight: '25%',
                   ),
                   const SizedBox(height: 24),
-                  // Dog comparison
+                  
                   Text('Dogs Comparison', style: AppTextStyles.heading3),
                   const SizedBox(height: 16),
                   Row(
@@ -225,7 +225,7 @@ class _CompatibilityResultsScreenState
                     ],
                   ),
                   const SizedBox(height: 24),
-                  // Message section
+                  
                   Text('Send a Message (Optional)', style: AppTextStyles.heading3),
                   const SizedBox(height: 8),
                   TextField(
@@ -239,7 +239,7 @@ class _CompatibilityResultsScreenState
                     ),
                   ),
                   const SizedBox(height: 24),
-                  // Send request button
+                  
                   Consumer<MatchProvider>(
                     builder: (context, matchProvider, child) {
                       return CustomButton(
@@ -340,11 +340,11 @@ class _DogCard extends StatelessWidget {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(AppSizes.borderRadius),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -377,7 +377,7 @@ class _DogCard extends StatelessWidget {
                   Text(
                     label,
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
                   Text(

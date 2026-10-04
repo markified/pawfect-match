@@ -1,15 +1,15 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import '../../models/dog_profile.dart';
-import '../../providers/auth_provider.dart';
+import '../../providers/auth_provider.dart' as app_auth;
 import '../../providers/dog_provider.dart';
 import '../../services/storage_service.dart';
 import '../../utils/constants.dart';
 import '../../utils/validators.dart';
-import '../../widgets/custom_button.dart';
-import '../../widgets/custom_text_field.dart';
+
+import '../../design_system/components/index.dart';
 
 class AddDogScreen extends StatefulWidget {
   final DogProfile? dogToEdit;
@@ -42,6 +42,9 @@ class _AddDogScreenState extends State<AddDogScreen> {
     if (widget.dogToEdit != null) {
       _loadDogData();
     }
+    
+    _nameController.addListener(() => setState(() {}));
+    _ageController.addListener(() => setState(() {}));
   }
 
   void _loadDogData() {
@@ -66,17 +69,15 @@ class _AddDogScreenState extends State<AddDogScreen> {
     super.dispose();
   }
 
-  Future<void> _pickImages() async {
-    final ImagePicker picker = ImagePicker();
-    final List<XFile> images = await picker.pickMultiImage();
-    
-    setState(() {
-      _selectedImages = images.map((xFile) => File(xFile.path)).toList();
-    });
-  }
+
 
   Future<void> _saveDogProfile() async {
     if (!_formKey.currentState!.validate()) {
+      
+      PawSnackbar.error(
+        context,
+        message: 'Please fix the errors in the form',
+      );
       return;
     }
 
@@ -105,15 +106,31 @@ class _AddDogScreenState extends State<AddDogScreen> {
     });
 
     try {
-      final authProvider = context.read<AuthProvider>();
+      final authProvider = context.read<app_auth.AuthProvider>();
       final dogProvider = context.read<DogProvider>();
-      final userId = authProvider.currentUser!.uid;
+      
+      String? userId = authProvider.currentUser?.uid;
 
-      // Upload images
+      if (userId == null || userId.trim().isEmpty) {
+        final firebaseUser = FirebaseAuth.instance.currentUser;
+        if (firebaseUser != null && firebaseUser.uid.trim().isNotEmpty) {
+          userId = firebaseUser.uid;
+        } else {
+          _showError('User not authenticated. Please log in again.');
+          setState(() {
+            _isUploading = false;
+          });
+          return;
+        }
+      }
+
+      final dogId = (widget.dogToEdit?.id ?? '').trim().isNotEmpty
+          ? widget.dogToEdit!.id
+          : '${userId}_${DateTime.now().millisecondsSinceEpoch}';
+
+      
       List<String> imageUrls = [];
       if (_selectedImages.isNotEmpty) {
-        final dogId = widget.dogToEdit?.id ??
-            '${userId}_${DateTime.now().millisecondsSinceEpoch}';
         imageUrls = await _storageService.uploadMultipleDogImages(
           _selectedImages,
           dogId,
@@ -121,8 +138,7 @@ class _AddDogScreenState extends State<AddDogScreen> {
       }
 
       final dogProfile = DogProfile(
-        id: widget.dogToEdit?.id ??
-            '${userId}_${DateTime.now().millisecondsSinceEpoch}',
+        id: dogId,
         ownerId: userId,
         name: _nameController.text.trim(),
         breed: _selectedBreed!,
@@ -146,12 +162,28 @@ class _AddDogScreenState extends State<AddDogScreen> {
           ? await dogProvider.createDogProfile(dogProfile)
           : await dogProvider.updateDogProfile(dogProfile);
 
+      if (success && mounted) {
+        await authProvider.loadUserData(userId);
+      }
+
       setState(() {
         _isUploading = false;
       });
 
       if (success && mounted) {
-        Navigator.pop(context, true);
+        
+        PawSnackbar.success(
+          context,
+          message: widget.dogToEdit != null 
+              ? 'Dog profile updated successfully'
+              : 'Dog profile added successfully',
+        );
+        
+        
+        await Future.delayed(const Duration(milliseconds: 1500));
+        if (mounted) {
+          Navigator.pop(context, true);
+        }
       } else if (mounted) {
         _showError(dogProvider.errorMessage ?? 'Failed to save dog profile');
       }
@@ -164,97 +196,115 @@ class _AddDogScreenState extends State<AddDogScreen> {
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: AppColors.error,
-      ),
+    PawSnackbar.error(
+      context,
+      message: message,
+      actionLabel: 'Dismiss',
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(widget.dogToEdit == null ? 'Add Dog' : 'Edit Dog'),
-        backgroundColor: AppColors.primary,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: PawAppBar(
+        title: widget.dogToEdit == null ? 'Add Dog Profile' : 'Edit Dog Profile',
+        backgroundColor: PawColors.primary,
         foregroundColor: Colors.white,
       ),
-      body: _isUploading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(AppSizes.paddingMedium),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Image picker
-                    _buildImagePicker(),
-                    const SizedBox(height: 24),
-                    // Name
-                    CustomTextField(
-                      controller: _nameController,
-                      label: 'Dog Name',
-                      hint: 'Enter dog name',
-                      prefixIcon: const Icon(Icons.pets),
-                      validator: (value) => Validators.validateRequired(value, 'Name'),
-                    ),
-                    const SizedBox(height: 16),
-                    // Breed
-                    _buildBreedDropdown(),
-                    const SizedBox(height: 16),
-                    // Age
-                    CustomTextField(
-                      controller: _ageController,
-                      label: 'Age (in months)',
-                      hint: 'Enter age in months',
-                      keyboardType: TextInputType.number,
-                      prefixIcon: const Icon(Icons.calendar_today),
-                      validator: Validators.validateAge,
-                    ),
-                    const SizedBox(height: 16),
-                    // Sex
-                    _buildSexSelector(),
-                    const SizedBox(height: 16),
-                    // Size
-                    _buildSizeDropdown(),
-                    const SizedBox(height: 16),
-                    // Color
-                    CustomTextField(
-                      controller: _colorController,
-                      label: 'Color',
-                      hint: 'Enter dog color',
-                      prefixIcon: const Icon(Icons.palette),
-                      validator: (value) => Validators.validateRequired(value, 'Color'),
-                    ),
-                    const SizedBox(height: 16),
-                    // Temperaments
-                    _buildTemperamentSelector(),
-                    const SizedBox(height: 16),
-                    // Health Info
-                    CustomTextField(
-                      controller: _healthInfoController,
-                      label: 'Health Information (Optional)',
-                      hint: 'Enter health details',
-                      maxLines: 3,
-                      prefixIcon: const Icon(Icons.medical_services),
-                    ),
-                    const SizedBox(height: 16),
-                    // Available for breeding
-                    _buildAvailabilitySwitch(),
-                    const SizedBox(height: 24),
-                    // Save button
-                    CustomButton(
-                      text: widget.dogToEdit == null ? 'Add Dog' : 'Update Dog',
-                      onPressed: _saveDogProfile,
-                      isLoading: _isUploading,
-                    ),
-                  ],
-                ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(PawSpacing.md),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              
+              _buildImagePicker(),
+              const SizedBox(height: PawSpacing.lg),
+              
+              
+              PawTextField(
+                controller: _nameController,
+                label: 'Dog Name',
+                hint: 'Enter dog name',
+                validator: (value) => Validators.validateRequired(value, 'Name'),
+                showSuccessState: _nameController.text.trim().isNotEmpty && 
+                                 Validators.validateRequired(_nameController.text, 'Name') == null,
+                showClearButton: true,
+                maxLength: 50,
+                prefixIcon: const Icon(Icons.pets),
               ),
-            ),
+              const SizedBox(height: PawSpacing.md),
+              
+              
+              _buildBreedDropdown(),
+              const SizedBox(height: PawSpacing.md),
+              
+              
+              PawTextField(
+                controller: _ageController,
+                label: 'Age (in months)',
+                hint: 'Enter age in months',
+                keyboardType: TextInputType.number,
+                validator: Validators.validateAge,
+                showSuccessState: int.tryParse(_ageController.text) != null && 
+                                 int.parse(_ageController.text) > 0,
+                prefixIcon: const Icon(Icons.calendar_today),
+              ),
+              const SizedBox(height: PawSpacing.md),
+              
+              
+              _buildSexSelector(),
+              const SizedBox(height: PawSpacing.md),
+              
+              
+              _buildSizeDropdown(),
+              const SizedBox(height: PawSpacing.md),
+              
+              
+              PawTextField(
+                controller: _colorController,
+                label: 'Color',
+                hint: 'Enter dog color',
+                validator: (value) => Validators.validateRequired(value, 'Color'),
+                showClearButton: true,
+                prefixIcon: const Icon(Icons.palette),
+              ),
+              const SizedBox(height: PawSpacing.md),
+              
+              
+              _buildTemperamentSelector(),
+              const SizedBox(height: PawSpacing.md),
+              
+              
+              PawTextField(
+                controller: _healthInfoController,
+                label: 'Health Information',
+                hint: 'Enter health details (optional)',
+                maxLines: 4,
+                showClearButton: true,
+                prefixIcon: const Icon(Icons.medical_services),
+              ),
+              const SizedBox(height: PawSpacing.md),
+              
+              
+              _buildAvailabilitySwitch(),
+              const SizedBox(height: PawSpacing.xl),
+              
+              
+              PawButton(
+                text: widget.dogToEdit == null ? 'Add Dog Profile' : 'Update Dog Profile',
+                onPressed: _isUploading ? null : _saveDogProfile,
+                type: PawButtonType.primary,
+                size: PawButtonSize.large,
+                isLoading: _isUploading,
+                icon: widget.dogToEdit == null ? Icons.add : Icons.save,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -262,82 +312,58 @@ class _AddDogScreenState extends State<AddDogScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Dog Photos', style: AppTextStyles.heading3),
-        const SizedBox(height: 8),
-        if (_selectedImages.isEmpty && widget.dogToEdit?.imageUrls.isEmpty != false)
-          GestureDetector(
-            onTap: _pickImages,
-            child: Container(
-              height: 150,
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(AppSizes.borderRadius),
-                border: Border.all(color: AppColors.border),
-              ),
-              child: const Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.add_photo_alternate, size: 48, color: AppColors.textSecondary),
-                    SizedBox(height: 8),
-                    Text('Tap to add photos'),
-                  ],
-                ),
-              ),
-            ),
-          )
-        else
-          Column(
-            children: [
-              SizedBox(
-                height: 150,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _selectedImages.length,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: Image.file(
-                        _selectedImages[index],
-                        width: 150,
-                        fit: BoxFit.cover,
-                      ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 8),
-              CustomButton(
-                text: 'Change Photos',
-                onPressed: _pickImages,
-                isOutlined: true,
-                height: 40,
-              ),
-            ],
-          ),
+        Text('Dog Photos', style: PawTypography.h3),
+        const SizedBox(height: PawSpacing.sm),
+        PawImagePicker(
+          images: _selectedImages,
+          onImagesChanged: (images) {
+            setState(() {
+              _selectedImages = images;
+            });
+          },
+          maxImages: 10,
+        ),
       ],
     );
   }
 
   Widget _buildBreedDropdown() {
     return DropdownButtonFormField<String>(
-      value: _selectedBreed,
+      initialValue: _selectedBreed,
       decoration: InputDecoration(
         labelText: 'Breed',
         prefixIcon: const Icon(Icons.pets),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSizes.borderRadius),
+          borderRadius: BorderRadius.circular(PawRadius.md),
         ),
+        filled: true,
+        fillColor: Theme.of(context).cardColor,
       ),
       items: DogBreeds.breeds.map((breed) {
         return DropdownMenuItem(value: breed, child: Text(breed));
       }).toList(),
-      onChanged: (value) {
-        setState(() {
-          _selectedBreed = value;
-        });
-      },
+      onChanged: (value) => setState(() => _selectedBreed = value),
       validator: (value) => value == null ? 'Please select a breed' : null,
+    );
+  }
+
+  Widget _buildSizeDropdown() {
+    return DropdownButtonFormField<String>(
+      initialValue: _selectedSize,
+      decoration: InputDecoration(
+        labelText: 'Size',
+        prefixIcon: const Icon(Icons.straighten),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(PawRadius.md),
+        ),
+        filled: true,
+        fillColor: Theme.of(context).cardColor,
+      ),
+      items: DogSizes.sizes.map((size) {
+        return DropdownMenuItem(value: size, child: Text(size));
+      }).toList(),
+      onChanged: (value) => setState(() => _selectedSize = value),
+      validator: (value) => value == null ? 'Please select a size' : null,
     );
   }
 
@@ -345,50 +371,42 @@ class _AddDogScreenState extends State<AddDogScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Sex', style: AppTextStyles.bodyMedium),
-        const SizedBox(height: 8),
+        Text('Sex *', style: PawTypography.bodyMedium.copyWith(
+          fontWeight: FontWeight.w600,
+        )),
+        const SizedBox(height: PawSpacing.sm),
         Row(
           children: [
             Expanded(
               child: _RadioOption(
                 label: 'Male',
+                icon: Icons.male,
                 selected: _selectedSex == Sex.male,
                 onTap: () => setState(() => _selectedSex = Sex.male),
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: PawSpacing.sm),
             Expanded(
               child: _RadioOption(
                 label: 'Female',
+                icon: Icons.female,
                 selected: _selectedSex == Sex.female,
                 onTap: () => setState(() => _selectedSex = Sex.female),
               ),
             ),
           ],
         ),
+        if (_selectedSex == null)
+          Padding(
+            padding: const EdgeInsets.only(top: PawSpacing.xs),
+            child: Text(
+              'Please select sex',
+              style: PawTypography.bodySmall.copyWith(
+                color: PawColors.error,
+              ),
+            ),
+          ),
       ],
-    );
-  }
-
-  Widget _buildSizeDropdown() {
-    return DropdownButtonFormField<String>(
-      value: _selectedSize,
-      decoration: InputDecoration(
-        labelText: 'Size',
-        prefixIcon: const Icon(Icons.straighten),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSizes.borderRadius),
-        ),
-      ),
-      items: DogSizes.sizes.map((size) {
-        return DropdownMenuItem(value: size, child: Text(size));
-      }).toList(),
-      onChanged: (value) {
-        setState(() {
-          _selectedSize = value;
-        });
-      },
-      validator: (value) => value == null ? 'Please select a size' : null,
     );
   }
 
@@ -396,54 +414,85 @@ class _AddDogScreenState extends State<AddDogScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Temperament', style: AppTextStyles.bodyMedium),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: Temperament.values.map((temp) {
-            final isSelected = _selectedTemperaments.contains(temp);
-            return FilterChip(
-              label: Text(temp.name[0].toUpperCase() + temp.name.substring(1)),
-              selected: isSelected,
-              onSelected: (selected) {
-                setState(() {
-                  if (selected) {
-                    _selectedTemperaments.add(temp);
-                  } else {
-                    _selectedTemperaments.remove(temp);
-                  }
-                });
-              },
-              selectedColor: AppColors.primary.withOpacity(0.3),
-            );
+        Text('Temperament *', style: PawTypography.bodyMedium.copyWith(
+          fontWeight: FontWeight.w600,
+        )),
+        const SizedBox(height: PawSpacing.sm),
+        ChipInput(
+          items: Temperament.values.map((temp) {
+            final tempName = temp.name;
+            return tempName.isEmpty 
+                ? 'Unknown' 
+                : '${tempName[0].toUpperCase()}${tempName.substring(1)}';
           }).toList(),
+          selectedItems: _selectedTemperaments.map((temp) {
+            final tempName = temp.name;
+            return tempName.isEmpty 
+                ? 'Unknown' 
+                : '${tempName[0].toUpperCase()}${tempName.substring(1)}';
+          }).toList(),
+          onItemTap: (displayName) {
+            setState(() {
+              final temp = Temperament.values.firstWhere(
+                (t) => t.name.toLowerCase() == displayName.toLowerCase() ||
+                       '${t.name[0].toUpperCase()}${t.name.substring(1)}' == displayName,
+              );
+              
+              if (_selectedTemperaments.contains(temp)) {
+                _selectedTemperaments.remove(temp);
+              } else {
+                _selectedTemperaments.add(temp);
+              }
+            });
+          },
+          maxVisible: 10,
         ),
+        if (_selectedTemperaments.isEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: PawSpacing.xs),
+            child: Text(
+              'Select at least one temperament',
+              style: PawTypography.bodySmall.copyWith(
+                color: PawColors.error,
+              ),
+            ),
+          ),
       ],
     );
   }
 
   Widget _buildAvailabilitySwitch() {
-    return SwitchListTile(
-      title: const Text('Available for Breeding'),
-      value: _isAvailable,
-      onChanged: (value) {
-        setState(() {
-          _isAvailable = value;
-        });
-      },
-      activeColor: AppColors.primary,
+    return PawCard(
+      child: SwitchListTile(
+        title: Text(
+          'Available for Breeding',
+          style: PawTypography.bodyMedium.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        subtitle: Text(
+          'Make this dog profile visible to potential breeding partners',
+          style: PawTypography.bodySmall.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+        value: _isAvailable,
+        onChanged: (value) => setState(() => _isAvailable = value),
+        activeThumbColor: PawColors.primary,
+      ),
     );
   }
 }
 
 class _RadioOption extends StatelessWidget {
   final String label;
+  final IconData icon;
   final bool selected;
   final VoidCallback onTap;
 
   const _RadioOption({
     required this.label,
+    required this.icon,
     required this.selected,
     required this.onTap,
   });
@@ -452,29 +501,38 @@ class _RadioOption extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(AppSizes.paddingMedium),
+      child: AnimatedContainer(
+        duration: PawDurations.short,
+        curve: Curves.easeInOut,
+        padding: const EdgeInsets.all(PawSpacing.md),
         decoration: BoxDecoration(
-          color: selected ? AppColors.primary.withOpacity(0.1) : Colors.white,
+          color: selected 
+              ? PawColors.primary.withValues(alpha: 0.1) 
+              : Theme.of(context).cardColor,
           border: Border.all(
-            color: selected ? AppColors.primary : AppColors.border,
+            color: selected
+                ? PawColors.primary
+                : Theme.of(context).colorScheme.primary,
             width: selected ? 2 : 1,
           ),
-          borderRadius: BorderRadius.circular(AppSizes.borderRadius),
+          borderRadius: BorderRadius.circular(PawRadius.md),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              selected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-              color: selected ? AppColors.primary : AppColors.textSecondary,
+              icon,
+              color: selected ? PawColors.primary : Theme.of(context).colorScheme.onSurfaceVariant,
+              size: 20,
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: PawSpacing.xs),
             Text(
               label,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: selected ? AppColors.primary : AppColors.textPrimary,
-                fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+              style: PawTypography.bodyMedium.copyWith(
+                color: selected
+                  ? PawColors.primary
+                  : Theme.of(context).colorScheme.onSurface,
+                fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
               ),
             ),
           ],
@@ -483,3 +541,6 @@ class _RadioOption extends StatelessWidget {
     );
   }
 }
+
+
+

@@ -85,7 +85,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       String? profileImageUrl = _currentImageUrl;
 
-      // Upload new image if selected
+      
       if (_selectedImage != null) {
         profileImageUrl = await _storageService.uploadUserProfileImage(
           _selectedImage!,
@@ -93,7 +93,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         );
       }
 
-      // Update user profile
+      
       final updatedUser = currentUser.copyWith(
         name: _nameController.text.trim(),
         phoneNumber: _phoneController.text.trim().isEmpty
@@ -107,7 +107,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       await _authService.updateUserProfile(updatedUser);
       
-      // Reload user data in provider
+      
       await authProvider.loadUserData(currentUser.uid);
 
       if (mounted) {
@@ -140,7 +140,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Edit Profile'),
         backgroundColor: AppColors.primary,
@@ -153,13 +153,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Profile picture
+              
               Center(
                 child: Stack(
                   children: [
                     CircleAvatar(
                       radius: 60,
-                      backgroundColor: AppColors.primary.withOpacity(0.1),
+                      backgroundColor: AppColors.primary.withValues(alpha: 0.1),
                       backgroundImage: _selectedImage != null
                           ? FileImage(_selectedImage!)
                           : (_currentImageUrl != null
@@ -197,7 +197,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
               ),
               const SizedBox(height: 32),
-              // Name
+              
               CustomTextField(
                 controller: _nameController,
                 label: 'Full Name',
@@ -206,7 +206,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 validator: (value) => Validators.validateRequired(value, 'Name'),
               ),
               const SizedBox(height: 16),
-              // Phone number
+              
               CustomTextField(
                 controller: _phoneController,
                 label: 'Phone Number (Optional)',
@@ -215,7 +215,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 prefixIcon: const Icon(Icons.phone),
               ),
               const SizedBox(height: 16),
-              // Location
+              
               CustomTextField(
                 controller: _locationController,
                 label: 'Location (Optional)',
@@ -223,14 +223,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 prefixIcon: const Icon(Icons.location_on),
               ),
               const SizedBox(height: 32),
-              // Info card
+              
               Container(
                 padding: const EdgeInsets.all(AppSizes.paddingMedium),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
+                  color: AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AppSizes.borderRadius),
                   border: Border.all(
-                    color: AppColors.primary.withOpacity(0.3),
+                    color: AppColors.primary.withValues(alpha: 0.3),
                   ),
                 ),
                 child: Row(
@@ -253,7 +253,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
               ),
               const SizedBox(height: 32),
-              // Save button
+              
               CustomButton(
                 text: 'Save Changes',
                 onPressed: _saveProfile,

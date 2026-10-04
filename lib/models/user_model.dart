@@ -23,7 +23,7 @@ class UserModel {
     this.dogIds = const [],
   });
 
-  // Convert to Firestore document
+  
   Map<String, dynamic> toMap() {
     return {
       'uid': uid,
@@ -38,7 +38,7 @@ class UserModel {
     };
   }
 
-  // Create from Firestore document
+  
   factory UserModel.fromMap(Map<String, dynamic> map) {
     return UserModel(
       uid: map['uid'] ?? '',
@@ -47,7 +47,9 @@ class UserModel {
       phoneNumber: map['phoneNumber'],
       location: map['location'],
       profileImageUrl: map['profileImageUrl'],
-      createdAt: (map['createdAt'] as Timestamp).toDate(),
+      createdAt: map['createdAt'] != null 
+          ? (map['createdAt'] as Timestamp).toDate() 
+          : DateTime.now(),
       isVerified: map['isVerified'] ?? false,
       dogIds: List<String>.from(map['dogIds'] ?? []),
     );

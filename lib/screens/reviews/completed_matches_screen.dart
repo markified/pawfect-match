@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
@@ -18,13 +18,13 @@ class CompletedMatchesScreen extends StatelessWidget {
     final matchProvider = context.watch<MatchProvider>();
     final authProvider = context.watch<AuthProvider>();
 
-    // Get completed matches
+    
     final completedMatches = [
       ...matchProvider.sentRequests,
       ...matchProvider.receivedRequests,
     ].where((request) => request.status == MatchStatus.completed).toList();
 
-    // Sort by completion date
+    
     completedMatches.sort((a, b) {
       final aDate = a.completedAt ?? a.createdAt;
       final bDate = b.completedAt ?? b.createdAt;
@@ -32,14 +32,14 @@ class CompletedMatchesScreen extends StatelessWidget {
     });
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Completed Matches'),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
       ),
       body: completedMatches.isEmpty
-          ? _buildEmptyState()
+          ? _buildEmptyState(context)
           : ListView.builder(
               padding: const EdgeInsets.all(AppSizes.paddingMedium),
               itemCount: completedMatches.length,
@@ -56,7 +56,7 @@ class CompletedMatchesScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppSizes.paddingLarge),
@@ -66,7 +66,7 @@ class CompletedMatchesScreen extends StatelessWidget {
             Icon(
               Icons.check_circle_outline,
               size: 100,
-              color: AppColors.textSecondary.withOpacity(0.5),
+              color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
             ),
             const SizedBox(height: 24),
             Text('No Completed Matches', style: AppTextStyles.heading2),
@@ -74,7 +74,7 @@ class CompletedMatchesScreen extends StatelessWidget {
             Text(
               'Completed breeding matches will appear here',
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
               textAlign: TextAlign.center,
             ),
@@ -99,7 +99,7 @@ class _CompletedMatchCard extends StatelessWidget {
     final dogProvider = context.watch<DogProvider>();
     final dateFormat = DateFormat('MMM dd, yyyy');
 
-    // Get the other party's dog
+    
     final dogId = isReceived
         ? matchRequest.requesterDogId
         : matchRequest.targetDogId;
@@ -121,7 +121,7 @@ class _CompletedMatchCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                // Dog image
+                
                 ClipRRect(
                   borderRadius: BorderRadius.circular(AppSizes.borderRadius),
                   child: dog.imageUrls.isNotEmpty
@@ -139,7 +139,7 @@ class _CompletedMatchCard extends StatelessWidget {
                         ),
                 ),
                 const SizedBox(width: 16),
-                // Dog info
+                
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -159,9 +159,9 @@ class _CompletedMatchCard extends StatelessWidget {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.blue.withOpacity(0.1),
+                              color: AppColors.success.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Colors.blue),
+                              border: Border.all(color: AppColors.success),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -169,13 +169,13 @@ class _CompletedMatchCard extends StatelessWidget {
                                 Icon(
                                   Icons.check_circle,
                                   size: 14,
-                                  color: Colors.blue,
+                                  color: AppColors.success,
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
                                   'Completed',
                                   style: AppTextStyles.bodySmall.copyWith(
-                                    color: Colors.blue,
+                                    color: AppColors.success,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -188,7 +188,7 @@ class _CompletedMatchCard extends StatelessWidget {
                       Text(
                         dog.breed,
                         style: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.textSecondary,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -197,7 +197,7 @@ class _CompletedMatchCard extends StatelessWidget {
                           Icon(
                             Icons.calendar_today,
                             size: 14,
-                            color: AppColors.textSecondary,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                           const SizedBox(width: 4),
                           Text(
@@ -214,7 +214,7 @@ class _CompletedMatchCard extends StatelessWidget {
             const SizedBox(height: 16),
             const Divider(),
             const SizedBox(height: 8),
-            // Review button
+            
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(

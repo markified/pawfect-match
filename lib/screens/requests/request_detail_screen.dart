@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
@@ -27,7 +27,7 @@ class RequestDetailScreen extends StatelessWidget {
     final dogProvider = context.watch<DogProvider>();
     final dateFormat = DateFormat('MMM dd, yyyy · HH:mm');
 
-    // Get both dogs
+    
     final myDog = dogProvider.allDogs.firstWhere(
       (d) => d.id == (isReceived ? request.targetDogId : request.requesterDogId),
       orElse: () => _getPlaceholderDog(
@@ -48,7 +48,7 @@ class RequestDetailScreen extends StatelessWidget {
     );
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Request Details'),
         backgroundColor: AppColors.primary,
@@ -58,10 +58,10 @@ class RequestDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Status header
+            
             _buildStatusHeader(dateFormat),
             const SizedBox(height: 16),
-            // Compatibility section
+            
             Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: AppSizes.paddingMedium,
@@ -97,7 +97,7 @@ class RequestDetailScreen extends StatelessWidget {
                     weight: '25%',
                   ),
                   const SizedBox(height: 24),
-                  // Dogs comparison
+                  
                   Text('Dogs', style: AppTextStyles.heading3),
                   const SizedBox(height: 16),
                   Row(
@@ -118,7 +118,7 @@ class RequestDetailScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 24),
-                  // Message section
+                  
                   if (request.message != null &&
                       request.message!.isNotEmpty) ...[
                     Text('Message', style: AppTextStyles.heading3),
@@ -127,11 +127,11 @@ class RequestDetailScreen extends StatelessWidget {
                       width: double.infinity,
                       padding: const EdgeInsets.all(AppSizes.paddingMedium),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: Theme.of(context).cardColor,
                         borderRadius: BorderRadius.circular(AppSizes.borderRadius),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
+                            color: Colors.black.withValues(alpha: 0.05),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
@@ -144,7 +144,7 @@ class RequestDetailScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 24),
                   ],
-                  // Action buttons
+                  
                   if (isReceived && request.status == MatchStatus.pending)
                     _buildActionButtons(context),
                   if (request.status == MatchStatus.accepted)
@@ -179,7 +179,7 @@ class RequestDetailScreen extends StatelessWidget {
         statusText = 'Rejected';
         break;
       case MatchStatus.completed:
-        statusColor = Colors.blue;
+        statusColor = AppColors.success;
         statusText = 'Completed';
         break;
       case MatchStatus.cancelled:
@@ -193,7 +193,7 @@ class RequestDetailScreen extends StatelessWidget {
       padding: const EdgeInsets.all(AppSizes.paddingLarge),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [statusColor, statusColor.withOpacity(0.7)],
+          colors: [statusColor, statusColor.withValues(alpha: 0.7)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -217,7 +217,7 @@ class RequestDetailScreen extends StatelessWidget {
           Text(
             'Request sent on ${dateFormat.format(request.createdAt)}',
             style: AppTextStyles.bodyMedium.copyWith(
-              color: Colors.white.withOpacity(0.9),
+              color: Colors.white.withValues(alpha: 0.9),
             ),
           ),
           if (request.respondedAt != null) ...[
@@ -225,7 +225,7 @@ class RequestDetailScreen extends StatelessWidget {
             Text(
               'Responded on ${dateFormat.format(request.respondedAt!)}',
               style: AppTextStyles.bodySmall.copyWith(
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withValues(alpha: 0.8),
               ),
             ),
           ],
@@ -256,7 +256,7 @@ class RequestDetailScreen extends StatelessWidget {
       padding: const EdgeInsets.all(AppSizes.paddingLarge),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [ratingColor, ratingColor.withOpacity(0.7)],
+          colors: [ratingColor, ratingColor.withValues(alpha: 0.7)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -321,10 +321,10 @@ class RequestDetailScreen extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(AppSizes.paddingMedium),
           decoration: BoxDecoration(
-            color: AppColors.success.withOpacity(0.1),
+            color: AppColors.success.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(AppSizes.borderRadius),
             border: Border.all(
-              color: AppColors.success.withOpacity(0.3),
+              color: AppColors.success.withValues(alpha: 0.3),
             ),
           ),
           child: Row(
@@ -555,7 +555,7 @@ class _DogCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppSizes.borderRadius),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -588,7 +588,7 @@ class _DogCard extends StatelessWidget {
                   Text(
                     label,
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
                   Text(

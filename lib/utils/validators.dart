@@ -48,7 +48,7 @@ class Validators {
 
   static String? validatePhoneNumber(String? value) {
     if (value == null || value.isEmpty) {
-      return null; // Optional field
+      return null; 
     }
     
     final phoneRegex = RegExp(r'^\+?[\d\s\-\(\)]+$');

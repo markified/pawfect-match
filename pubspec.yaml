@@ -39,10 +39,14 @@ dependencies:
   firebase_core: ^3.8.1
   firebase_auth: ^5.3.3
   cloud_firestore: ^5.5.2
-  firebase_storage: ^12.3.6
+  
+  # Cloudinary for image storage
+  cloudinary_public: ^0.23.1
+  http: ^1.2.0
   
   # State Management
   provider: ^6.1.2
+  shared_preferences: ^2.5.3
   
   # Image Handling
   image_picker: ^1.1.2

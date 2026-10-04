@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../models/dog_profile.dart';
@@ -7,6 +7,8 @@ import '../../services/compatibility_service.dart';
 import '../../utils/constants.dart';
 import '../dogs/add_dog_screen.dart';
 import 'compatibility_results_screen.dart';
+
+import '../../design_system/components/index.dart';
 
 class MatcherScreen extends StatefulWidget {
   const MatcherScreen({super.key});
@@ -26,21 +28,19 @@ class _MatcherScreenState extends State<MatcherScreen> {
     final myDogs = dogProvider.userDogs;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Find Matches'),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: PawAppBar(
+        title: 'Find Matches',
       ),
       body: myDogs.isEmpty
           ? _buildEmptyState()
           : Column(
               children: [
-                // Dog selector
+                
                 _buildDogSelector(myDogs),
-                // Filters
+                
                 if (_selectedDog != null) _buildFilters(),
-                // Results
+                
                 Expanded(
                   child: _selectedDog == null
                       ? _buildSelectDogPrompt()
@@ -52,61 +52,31 @@ class _MatcherScreenState extends State<MatcherScreen> {
   }
 
   Widget _buildEmptyState() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSizes.paddingLarge),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.search_off,
-              size: 100,
-              color: AppColors.textSecondary.withOpacity(0.5),
-            ),
-            const SizedBox(height: 24),
-            Text('No Dogs to Match', style: AppTextStyles.heading2),
-            const SizedBox(height: 8),
-            Text(
-              'Add a dog profile first to start finding matches',
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const AddDogScreen()),
-                );
-              },
-              icon: const Icon(Icons.add),
-              label: const Text('Add Dog'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 32,
-                  vertical: 16,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+    return EmptyState(
+      icon: Icons.search_off,
+      title: 'No Dogs to Match',
+      message: 'Add a dog profile first to start finding matches',
+      actionLabel: 'Add Dog',
+      onAction: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const AddDogScreen()),
+        );
+      },
     );
   }
 
   Widget _buildDogSelector(List<DogProfile> dogs) {
     return Container(
-      padding: const EdgeInsets.all(AppSizes.paddingMedium),
-      color: Colors.white,
+      padding: const EdgeInsets.all(PawSpacing.md),
+      color: Theme.of(context).cardColor,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Select Your Dog', style: AppTextStyles.bodyMedium),
-          const SizedBox(height: 8),
+          Text('Select Your Dog', style: PawTypography.bodyMedium.copyWith(
+            fontWeight: FontWeight.w600,
+          )),
+          const SizedBox(height: PawSpacing.sm),
           SizedBox(
             height: 100,
             child: ListView.builder(
@@ -123,22 +93,23 @@ class _MatcherScreenState extends State<MatcherScreen> {
                       _sexFilter = null;
                     });
                   },
-                  child: Container(
+                  child: AnimatedContainer(
+                    duration: PawDurations.short,
                     width: 80,
-                    margin: const EdgeInsets.only(right: 12),
+                    margin: const EdgeInsets.only(right: PawSpacing.sm),
                     decoration: BoxDecoration(
                       border: Border.all(
-                        color: isSelected ? AppColors.primary : AppColors.border,
+                        color: isSelected ? PawColors.primary : PawColors.border,
                         width: isSelected ? 3 : 1,
                       ),
-                      borderRadius: BorderRadius.circular(AppSizes.borderRadius),
+                      borderRadius: BorderRadius.circular(PawRadius.md),
                     ),
                     child: Column(
                       children: [
                         Expanded(
                           child: ClipRRect(
-                            borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(AppSizes.borderRadius),
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(PawRadius.md),
                             ),
                             child: dog.imageUrls.isNotEmpty
                                 ? CachedNetworkImage(
@@ -147,8 +118,8 @@ class _MatcherScreenState extends State<MatcherScreen> {
                                     width: double.infinity,
                                   )
                                 : Container(
-                                    color: Colors.grey[300],
-                                    child: const Icon(Icons.pets, size: 30),
+                                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                                    child: Icon(Icons.pets, size: 30, color: Theme.of(context).colorScheme.onSurfaceVariant),
                                   ),
                           ),
                         ),
@@ -156,7 +127,10 @@ class _MatcherScreenState extends State<MatcherScreen> {
                           padding: const EdgeInsets.all(4),
                           child: Text(
                             dog.name,
-                            style: AppTextStyles.bodySmall,
+                            style: PawTypography.bodySmall.copyWith(
+                              color: isSelected ? PawColors.primary : PawColors.textPrimary,
+                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                            ),
                             overflow: TextOverflow.ellipsis,
                             textAlign: TextAlign.center,
                           ),
@@ -173,32 +147,50 @@ class _MatcherScreenState extends State<MatcherScreen> {
     );
   }
 
-  Widget _buildFilters() {
+    Widget _buildFilters() {
     return Container(
-      padding: const EdgeInsets.all(AppSizes.paddingMedium),
-      color: Colors.white,
+      padding: const EdgeInsets.symmetric(
+        horizontal: PawSpacing.md,
+        vertical: PawSpacing.sm,
+      ),
+      color: Theme.of(context).cardColor,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Filters', style: AppTextStyles.bodyMedium),
-          const SizedBox(height: 8),
+          Text('Filters', style: PawTypography.bodySmall.copyWith(
+            fontWeight: FontWeight.w600,
+          )),
+          const SizedBox(height: PawSpacing.xs),
           Row(
             children: [
               Expanded(
+                flex: 3,
                 child: DropdownButtonFormField<String>(
-                  value: _breedFilter,
-                  decoration: const InputDecoration(
+                  initialValue: _breedFilter,
+                  isExpanded: true,
+                  decoration: InputDecoration(
                     labelText: 'Breed',
                     isDense: true,
-                    contentPadding: EdgeInsets.symmetric(
-                      horizontal: 12,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 8,
                       vertical: 8,
                     ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(PawRadius.md),
+                    ),
+                    filled: true,
+                    fillColor: Theme.of(context).scaffoldBackgroundColor,
                   ),
                   items: [
-                    const DropdownMenuItem(value: null, child: Text('All Breeds')),
+                    const DropdownMenuItem(
+                      value: null, 
+                      child: Text('All Breeds', overflow: TextOverflow.ellipsis),
+                    ),
                     ...DogBreeds.breeds.map((breed) {
-                      return DropdownMenuItem(value: breed, child: Text(breed));
+                      return DropdownMenuItem(
+                        value: breed, 
+                        child: Text(breed, overflow: TextOverflow.ellipsis),
+                      );
                     }),
                   ],
                   onChanged: (value) {
@@ -208,17 +200,24 @@ class _MatcherScreenState extends State<MatcherScreen> {
                   },
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 8),
               Expanded(
+                flex: 2,
                 child: DropdownButtonFormField<Sex>(
-                  value: _sexFilter,
-                  decoration: const InputDecoration(
+                  initialValue: _sexFilter,
+                  isExpanded: true,
+                  decoration: InputDecoration(
                     labelText: 'Sex',
                     isDense: true,
-                    contentPadding: EdgeInsets.symmetric(
-                      horizontal: 12,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 8,
                       vertical: 8,
                     ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(PawRadius.md),
+                    ),
+                    filled: true,
+                    fillColor: Theme.of(context).scaffoldBackgroundColor,
                   ),
                   items: const [
                     DropdownMenuItem(value: null, child: Text('All')),
@@ -240,36 +239,22 @@ class _MatcherScreenState extends State<MatcherScreen> {
   }
 
   Widget _buildSelectDogPrompt() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.arrow_upward,
-            size: 60,
-            color: AppColors.textSecondary.withOpacity(0.5),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Select a dog to find matches',
-            style: AppTextStyles.bodyLarge.copyWith(
-              color: AppColors.textSecondary,
-            ),
-          ),
-        ],
-      ),
+    return EmptyState(
+      icon: Icons.arrow_upward,
+      title: 'Select a Dog',
+      message: 'Choose one of your dogs above to find compatible breeding partners',
     );
   }
 
   Widget _buildMatchResults(List<DogProfile> availableDogs) {
-    // Apply filters
+    
     var filteredDogs = availableDogs.where((dog) {
       if (_breedFilter != null && dog.breed != _breedFilter) return false;
       if (_sexFilter != null && dog.sex != _sexFilter) return false;
       return true;
     }).toList();
 
-    // Calculate compatibility scores
+    
     final dogsWithScores = filteredDogs.map((dog) {
       final score = CompatibilityService.calculateCompatibilityScore(
         _selectedDog!,
@@ -278,42 +263,27 @@ class _MatcherScreenState extends State<MatcherScreen> {
       return {'dog': dog, 'score': score};
     }).toList();
 
-    // Sort by compatibility score
+    
     dogsWithScores.sort((a, b) =>
         (b['score'] as double).compareTo(a['score'] as double));
 
     if (dogsWithScores.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSizes.paddingLarge),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.search_off,
-                size: 80,
-                color: AppColors.textSecondary.withOpacity(0.5),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'No matches found',
-                style: AppTextStyles.heading3,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Try adjusting your filters',
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-              ),
-            ],
-          ),
-        ),
+      return EmptyState(
+        icon: Icons.search_off,
+        title: 'No Matches Found',
+        message: 'Try adjusting your filters to see more breeding partners',
+        actionLabel: 'Clear Filters',
+        onAction: () {
+          setState(() {
+            _breedFilter = null;
+            _sexFilter = null;
+          });
+        },
       );
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(AppSizes.paddingMedium),
+      padding: const EdgeInsets.all(PawSpacing.md),
       itemCount: dogsWithScores.length,
       itemBuilder: (context, index) {
         final data = dogsWithScores[index];
@@ -347,140 +317,134 @@ class _MatchCard extends StatelessWidget {
 
     Color ratingColor;
     if (score >= 0.8) {
-      ratingColor = AppColors.success;
+      ratingColor = PawColors.success;
     } else if (score >= 0.65) {
-      ratingColor = AppColors.primary;
+      ratingColor = PawColors.primary;
     } else if (score >= 0.5) {
-      ratingColor = AppColors.accent;
+      ratingColor = PawColors.accent;
     } else {
-      ratingColor = AppColors.error;
+      ratingColor = PawColors.error;
     }
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      elevation: AppSizes.cardElevation,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppSizes.borderRadius),
-      ),
-      child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => CompatibilityResultsScreen(
-                selectedDog: selectedDog,
-                targetDog: dog,
-              ),
+    return PawCard(
+      margin: const EdgeInsets.only(bottom: PawSpacing.md),
+      onTap: () {
+        Navigator.push(
+          context,
+          PawPageRoute(
+            page: CompatibilityResultsScreen(
+              selectedDog: selectedDog,
+              targetDog: dog,
             ),
-          );
-        },
-        borderRadius: BorderRadius.circular(AppSizes.borderRadius),
-        child: Padding(
-          padding: const EdgeInsets.all(AppSizes.paddingMedium),
-          child: Row(
-            children: [
-              // Dog image
-              ClipRRect(
-                borderRadius: BorderRadius.circular(AppSizes.borderRadius),
+          ),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.all(PawSpacing.md),
+        child: Row(
+          children: [
+            
+            PawHero(
+              tag: 'match-dog-${dog.id}',
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(PawRadius.md),
                 child: dog.imageUrls.isNotEmpty
                     ? CachedNetworkImage(
                         imageUrl: dog.imageUrls.first,
                         width: 80,
                         height: 80,
                         fit: BoxFit.cover,
-                        placeholder: (context, url) => Container(
+                        placeholder: (context, url) => const SkeletonBox(
                           width: 80,
                           height: 80,
-                          color: Colors.grey[300],
-                          child: const Center(
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
+                          borderRadius: 0,
                         ),
                       )
                     : Container(
                         width: 80,
                         height: 80,
-                        color: Colors.grey[300],
-                        child: const Icon(Icons.pets, size: 40),
+                        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                        child: Icon(Icons.pets, size: 40, color: Theme.of(context).colorScheme.onSurfaceVariant),
                       ),
               ),
-              const SizedBox(width: 16),
-              // Dog info
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            dog.name,
-                            style: AppTextStyles.heading3,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+            ),
+            const SizedBox(width: PawSpacing.md),
+            
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          dog.name,
+                          style: PawTypography.h3,
+                          overflow: TextOverflow.ellipsis,
                         ),
+                      ),
+                      Icon(
+                        dog.sex == Sex.male ? Icons.male : Icons.female,
+                        color: dog.sex == Sex.male ? Colors.blue : Colors.pink,
+                        size: 20,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    dog.breed,
+                    style: PawTypography.bodyMedium.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${dog.ageDisplay} • ${dog.size}',
+                    style: PawTypography.bodySmall,
+                  ),
+                  const SizedBox(height: PawSpacing.sm),
+                  
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: PawSpacing.sm,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: ratingColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: ratingColor),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
                         Icon(
-                          dog.sex == Sex.male ? Icons.male : Icons.female,
-                          color: dog.sex == Sex.male ? Colors.blue : Colors.pink,
-                          size: 20,
+                          Icons.favorite,
+                          size: 14,
+                          color: ratingColor,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '$percentage $rating Match',
+                          style: PawTypography.bodySmall.copyWith(
+                            color: ratingColor,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      dog.breed,
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${dog.ageDisplay} • ${dog.size}',
-                      style: AppTextStyles.bodySmall,
-                    ),
-                    const SizedBox(height: 8),
-                    // Compatibility badge
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: ratingColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: ratingColor),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.favorite,
-                            size: 14,
-                            color: ratingColor,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            '$percentage $rating Match',
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: ratingColor,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              const Icon(
-                Icons.arrow_forward_ios,
-                size: 16,
-                color: AppColors.textSecondary,
-              ),
-            ],
-          ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios,
+              size: 16,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ],
         ),
       ),
     );
   }
 }
+

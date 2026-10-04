@@ -20,7 +20,7 @@ class DogProfile {
   final String breed;
   final int ageInMonths;
   final Sex sex;
-  final String size; // small, medium, large
+  final String size; 
   final String color;
   final List<Temperament> temperaments;
   final List<String> imageUrls;
@@ -50,7 +50,7 @@ class DogProfile {
     this.lastUpdated,
   });
 
-  // Convert to Firestore document
+  
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -72,7 +72,7 @@ class DogProfile {
     };
   }
 
-  // Create from Firestore document
+  
   factory DogProfile.fromMap(Map<String, dynamic> map) {
     return DogProfile(
       id: map['id'] ?? '',
@@ -143,7 +143,7 @@ class DogProfile {
     );
   }
 
-  // Get age in years for display
+  
   String get ageDisplay {
     if (ageInMonths < 12) {
       return '$ageInMonths months';

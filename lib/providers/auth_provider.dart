@@ -32,7 +32,10 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> loadUserData(String uid) async {
     try {
-      _currentUser = await _authService.getUserData(uid);
+      final userData = await _authService.getUserData(uid);
+      _currentUser = userData?.uid.trim().isNotEmpty == true
+          ? userData
+          : userData?.copyWith(uid: uid);
       notifyListeners();
     } catch (e) {
       _errorMessage = e.toString();
