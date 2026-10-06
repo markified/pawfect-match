@@ -7,7 +7,6 @@ import '../../services/compatibility_service.dart';
 import '../../utils/constants.dart';
 import '../dogs/add_dog_screen.dart';
 import 'compatibility_results_screen.dart';
-
 import '../../design_system/components/index.dart';
 
 class MatcherScreen extends StatefulWidget {

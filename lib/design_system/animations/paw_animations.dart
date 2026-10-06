@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-
-
 class PawAnimations {
   
   static const Curve standard = Curves.easeInOutCubic;

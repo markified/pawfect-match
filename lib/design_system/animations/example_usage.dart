@@ -1,13 +1,7 @@
-
-
-
-
-
 import 'package:flutter/material.dart';
 import 'paw_animations.dart';
 import 'transitions.dart';
 import 'micro_interactions.dart';
-
 
 void navigateWithSlideTransition(BuildContext context, Widget destination) {
   Navigator.push(

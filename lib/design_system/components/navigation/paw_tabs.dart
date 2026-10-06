@@ -2,8 +2,6 @@
 import '../../tokens/paw_colors.dart';
 import '../../tokens/paw_typography.dart';
 
-
-
 class PawTabs extends StatelessWidget {
   final List<String> tabs;
   final TabController? controller;

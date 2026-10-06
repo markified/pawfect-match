@@ -2,8 +2,6 @@
 import '../../tokens/paw_typography.dart';
 import '../../tokens/paw_durations.dart';
 
-
-
 class PawBottomNavigation extends StatefulWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;

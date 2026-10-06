@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-
 import 'dart:math' as math;
-
 import '../../models/dog_profile.dart';
 import '../../providers/dog_provider.dart';
 import '../../services/compatibility_service.dart';

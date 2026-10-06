@@ -56,18 +56,6 @@ class StorageService {
   Future<void> deleteImage(String imageUrl) async {
     try {
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
     } catch (e) {
       
     }

@@ -8,7 +8,6 @@ import '../../providers/dog_provider.dart';
 import '../../services/storage_service.dart';
 import '../../utils/constants.dart';
 import '../../utils/validators.dart';
-
 import '../../design_system/components/index.dart';
 
 class AddDogScreen extends StatefulWidget {
@@ -33,7 +32,7 @@ class _AddDogScreenState extends State<AddDogScreen> {
   String? _selectedSize;
   List<Temperament> _selectedTemperaments = [];
   List<File> _selectedImages = [];
-  bool _isAvailable = true;
+  bool _isAvailable = false;
   bool _isUploading = false;
 
   @override
@@ -478,7 +477,10 @@ class _AddDogScreenState extends State<AddDogScreen> {
         ),
         value: _isAvailable,
         onChanged: (value) => setState(() => _isAvailable = value),
-        activeThumbColor: PawColors.primary,
+        activeThumbColor: Colors.white,
+        activeTrackColor: PawColors.primary,
+        inactiveThumbColor: Colors.white,
+        inactiveTrackColor: Colors.grey.shade600,
       ),
     );
   }

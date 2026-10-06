@@ -45,7 +45,7 @@ class DogProfile {
     this.healthInfo,
     this.rating = 0.0,
     this.ratingCount = 0,
-    this.isAvailableForBreeding = true,
+    this.isAvailableForBreeding = false,
     required this.createdAt,
     this.lastUpdated,
   });
@@ -97,7 +97,7 @@ class DogProfile {
       healthInfo: map['healthInfo'],
       rating: (map['rating'] ?? 0.0).toDouble(),
       ratingCount: map['ratingCount'] ?? 0,
-      isAvailableForBreeding: map['isAvailableForBreeding'] ?? true,
+      isAvailableForBreeding: map['isAvailableForBreeding'] ?? false,
       createdAt: (map['createdAt'] as Timestamp).toDate(),
       lastUpdated: map['lastUpdated'] != null
           ? (map['lastUpdated'] as Timestamp).toDate()

@@ -9,9 +9,6 @@ import '../models/community_post.dart';
 class FirestoreService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  
-
-  
   Future<void> createDogProfile(DogProfile dog) async {
     try {
       final dogId = dog.id.trim();

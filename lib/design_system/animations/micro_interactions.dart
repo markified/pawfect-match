@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'paw_animations.dart';
 
-
 class PressAnimation extends StatefulWidget {
   final Widget child;
   final VoidCallback? onPressed;

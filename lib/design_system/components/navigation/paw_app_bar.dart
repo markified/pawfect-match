@@ -2,8 +2,6 @@
 import '../../tokens/paw_typography.dart';
 import '../../tokens/paw_elevation.dart';
 
-
-
 class PawAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String? title;
   final Widget? titleWidget;

@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'paw_animations.dart';
 
-
 enum PawTransitionType {
   slide,
   fade,
   scale,
   fadeThrough,
 }
-
-
 
 class PawPageRoute<T> extends PageRouteBuilder<T> {
   final Widget page;
