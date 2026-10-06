@@ -4,8 +4,6 @@ import '../../tokens/paw_typography.dart';
 import '../../tokens/paw_spacing.dart';
 import '../../tokens/paw_radius.dart';
 
-
-
 class PawDropdown<T> extends StatefulWidget {
   final String? label;
   final String? hint;
@@ -55,7 +53,7 @@ class _PawDropdownState<T> extends State<PawDropdown<T>> {
     }
     
     return DropdownButtonFormField<T>(
-      value: widget.value,
+      initialValue: widget.value,
       decoration: InputDecoration(
         labelText: widget.label,
         hintText: widget.hint,

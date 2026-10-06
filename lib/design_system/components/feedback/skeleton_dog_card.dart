@@ -1,9 +1,6 @@
 ﻿import 'package:flutter/material.dart';
-import '../../tokens/paw_colors.dart';
 import '../../tokens/paw_spacing.dart';
 import 'skeleton_loader.dart';
-
-
 
 class SkeletonDogCard extends StatelessWidget {
   const SkeletonDogCard({super.key});

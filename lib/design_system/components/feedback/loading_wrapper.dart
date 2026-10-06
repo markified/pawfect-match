@@ -1,10 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import '../../animations/paw_animations.dart';
 
-
-
-
-
 class LoadingWrapper extends StatelessWidget {
   final bool isLoading;
   final Widget skeleton;
@@ -89,7 +85,7 @@ class LoadingListWrapper extends StatelessWidget {
           alignment: Alignment.topCenter,
           children: [
             ...previousChildren,
-            if (currentChild != null) currentChild,
+            ?currentChild,
           ],
         );
       },

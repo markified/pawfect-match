@@ -193,8 +193,7 @@ class _QueuedSnackbar {
   _QueuedSnackbar({
     required this.message,
     required this.type,
-    this.actionLabel,
-    this.onAction,
     required this.duration,
-  });
+  }) : actionLabel = null,
+       onAction = null;
 }

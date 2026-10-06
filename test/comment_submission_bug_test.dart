@@ -7,33 +7,6 @@ import 'package:pawfect/models/user_model.dart';
 import 'package:pawfect/providers/auth_provider.dart';
 import 'package:pawfect/providers/community_provider.dart';
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 void main() {
   group('Bug Condition Exploration - Comment Submission', () {
     late MockAuthProvider mockAuthProvider;
@@ -329,7 +302,7 @@ void main() {
 
 class MockAuthProvider extends ChangeNotifier implements AuthProvider {
   UserModel? _currentUser;
-  bool _isLoading = false;
+  final bool _isLoading = false;
   String? _errorMessage;
   
   @override
