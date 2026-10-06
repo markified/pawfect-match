@@ -154,6 +154,7 @@ class _DogDetailScreenState extends State<DogDetailScreen> {
                 ? [
                     IconButton(
                       icon: const Icon(Icons.edit),
+                      color: AppColors.primary,
                       onPressed: () async {
                         final result = await Navigator.push(
                           context,
@@ -168,6 +169,7 @@ class _DogDetailScreenState extends State<DogDetailScreen> {
                     ),
                     IconButton(
                       icon: const Icon(Icons.delete),
+                      color: AppColors.primary,
                       onPressed: _deleteDog,
                     ),
                   ]
